@@ -1,0 +1,64 @@
+{
+  "pages": [
+    "pages/index/main",
+    "pages/all/main",
+    "pages/cart/main",
+    "pages/mine/main",
+    "pages/logs/main",
+    "pages/login/main",
+    "pages/counter/main",
+    "pages/goods/main",
+    "pages/fenxiaozhongxin/main",
+    "pages/fenxiaodingdan/main",
+    "pages/tuandui/main",
+    "pages/shouHuoDiZhi/main",
+    "pages/zhangHaoBangDing/main",
+    "pages/zaiXianKeFu/main",
+    "pages/fenXiang/main",
+    "pages/yongjin/main",
+    "pages/tixianmingxi/main",
+    "pages/woyaotixian/main",
+    "pages/tuiguang/main",
+    "pages/daiFuKuan/main",
+    "pages/daiFaHuo/main",
+    "pages/daiShouHuo/main",
+    "pages/daiPingJia/main",
+    "pages/tuiHuoZhong/main",
+    "pages/buyGoods/main",
+    "pages/quanBuDingDan/main",
+    "pages/phoneYanZheng/main",
+    "pages/woDeDingDan/main",
+    "pages/queRenDingDan/main",
+    "pages/dingDanXiangQing/main",
+    "pages/addShouHuoDiZhi/main"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "新农严选",
+    "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "list": [{
+      "pagePath": "pages/index/main",
+      "text": "首页",
+      "iconPath": "assets/image/home@2x.png",
+      "selectedIconPath": "assets/image/opt_home@2x.png"
+    }, {
+      "pagePath": "pages/all/main",
+      "text": "全部商品",
+      "iconPath": "assets/image/mall@2x.png",
+      "selectedIconPath": "assets/image/opt_mall@2x.png"
+    }, {
+      "pagePath": "pages/cart/main",
+      "text": "购物车",
+      "iconPath": "assets/image/shopping@2x.png",
+      "selectedIconPath": "assets/image/opt_shopping@2x.png"
+    }, {
+      "pagePath": "pages/mine/main",
+      "text": "我的",
+      "iconPath": "assets/image/me@2x.png",
+      "selectedIconPath": "assets/image/opt_me@2x.png"
+    }]
+  }
+}

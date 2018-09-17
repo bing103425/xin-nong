@@ -1,0 +1,161 @@
+{
+	"description": "项目配置文件。",
+	"setting": {
+		"urlCheck": false,
+		"es6": false,
+		"postcss": true,
+		"minified": true,
+		"newFeature": true
+	},
+	"miniprogramRoot": "./dist/",
+	"compileType": "miniprogram",
+	"appid": "wxb25ff7ba3c369546",
+	"projectname": "xnong-program",
+	"condition": {
+		"search": {
+			"current": -1,
+			"list": []
+		},
+		"conversation": {
+			"current": -1,
+			"list": []
+		},
+		"plugin": {
+			"current": -1,
+			"list": []
+		},
+		"game": {
+			"currentL": -1,
+			"list": []
+		},
+		"miniprogram": {
+			"current": 19,
+			"list": [
+				{
+					"id": 0,
+					"name": "商品详情",
+					"pathName": "pages/goods/main",
+					"query": "id=140",
+					"scene": "1096"
+				},
+				{
+					"id": -1,
+					"name": "全部商品",
+					"pathName": "pages/all/main",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "购物车",
+					"pathName": "pages/cart/main",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "个人中心",
+					"pathName": "pages/mine/main",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "分销中心",
+					"pathName": "pages/fenxiaozhongxin/main",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "我的团队",
+					"pathName": "pages/tuandui/main",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "收货地址",
+					"pathName": "pages/shouHuoDiZhi/main",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "我要提现",
+					"pathName": "pages/woyaotixian/main",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "提现明细",
+					"pathName": "pages/tixianmingxi/main",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "下单",
+					"pathName": "pages/buyGoods/main",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "全部订单",
+					"pathName": "pages/quanBuDingDan/main",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "账号绑定",
+					"pathName": "pages/zhangHaoBangDing/main",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "验证手机号",
+					"pathName": "pages/phoneYanZheng/main",
+					"query": ""
+				},
+				{
+					"id": 13,
+					"name": "待评价",
+					"pathName": "pages/daiPingJia/main",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "待收货",
+					"pathName": "pages/daiShouHuo/main",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "退货中",
+					"pathName": "pages/tuiHuoZhong/main",
+					"query": ""
+				},
+				{
+					"id": 16,
+					"name": "登录",
+					"pathName": "pages/login/main",
+					"query": "",
+					"scene": "1096"
+				},
+				{
+					"id": 17,
+					"name": "确认订单",
+					"pathName": "pages/queRenDingDan/main",
+					"query": "",
+					"scene": "1096"
+				},
+				{
+					"id": -1,
+					"name": "添加收货地址",
+					"pathName": "pages/addShouHuoDiZhi/main",
+					"query": "",
+					"scene": "1096"
+				},
+				{
+					"id": -1,
+					"name": "订单详情",
+					"pathName": "pages/dingDanXiangQing/main",
+					"query": "orderId=29"
+				}
+			]
+		}
+	}
+}

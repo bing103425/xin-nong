@@ -1,0 +1,1 @@
+<template name="411bc9d4"><view class="_div data-v-3f4e8c6a page"><view class="_div data-v-3f4e8c6a page__hd"><view class="_div data-v-3f4e8c6a page__title">Gallery</view> <view class="_div data-v-3f4e8c6a page__desc">画廊，建议采用小程序原生的wx.chooseImage和wx.previewImage来实现。详情请看小程序文档。</view></view></view></template>

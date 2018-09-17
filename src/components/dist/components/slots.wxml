@@ -1,0 +1,3 @@
+
+<import src="/components/button/button.vue.wxml" />
+<import src="/components/card.vue.wxml" />
