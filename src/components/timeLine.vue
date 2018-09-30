@@ -8,8 +8,8 @@
           <div class="dsh-line"></div>
         </div>
         <div class="dsh-rela">
-          <p class="dsh-kd-text">{{item.text}}</p>
-          <p class="dsh-kd-time">{{item.time}}</p>
+          <p class="dsh-kd-text">{{item.AcceptStation}}</p>
+          <p class="dsh-kd-time">{{item.AcceptTime}}</p>
         </div>
       </li>
     </ul>
@@ -18,20 +18,7 @@
 
 <script>
 export default {
-  data(){
-    return {
-      expressData:[{
-        text:'快递从杭州发出',
-        time:'2018-08-02  15:42:02'
-      },{
-        text:'已发货',
-        time:'2018-08-01  20:30:18'
-      },{
-        text:'快递已出库',
-        time:'2018-08-01  13:01:21'
-      }]
-    }
-  }
+  props:['expressData']
 }
 </script>
 

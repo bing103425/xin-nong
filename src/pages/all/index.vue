@@ -17,12 +17,10 @@
         </div>
       </li>
       <div v-if="goodsList.length" class="all100">
-        <p v-if="isNextPage" class="all-more" @click="loadMore">加载更多</p>
+        <p v-if="isNextPage" class="all-more">上拉加载更多</p>
         <p v-else class="all-nomore">我是有底线的</p>
       </div>
-      <li v-if="isHasContent" class="all-no-content">
-        啊呀，暂无内容~
-      </li>
+      <li v-if="isHasContent" class="all-no-content">啊呀，暂无内容~</li>
     </ul>
   </div>
 </template>
@@ -52,7 +50,7 @@ export default {
   methods: {
     //跳转商品详情页
     toDetailPage(goodsId){
-      wx.redirectTo({
+      wx.navigateTo({
         url: '/pages/goods/main?id='+goodsId
       })
     },
@@ -122,10 +120,16 @@ export default {
           }
         })
       }
-    },
-    //加载更多
-    loadMore(){
-      var that = this
+    }
+  },
+  //上拉加载更多
+  onReachBottom() {
+    var that = this 
+    if(that.isNextPage){
+      // 显示加载图标
+      wx.showLoading({
+        title: '玩命加载中'
+      })    // 页数+1
       wx.request({
         url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getGoodsList',
         method:'post',
@@ -135,9 +139,8 @@ export default {
           p: that.page
         },
         success: function(res) {
-          console.log(res.data)
+          wx.hideLoading()
           that.goodsList = that.goodsList.concat(res.data.data.goods_list)
-          console.log()
           if(res.data.data.goods_list_page == that.page){
             that.isNextPage = false
           }
@@ -153,12 +156,12 @@ export default {
   },
   //分享给好友
   onShareAppMessage: function () {
-      return {
-          title: '啦啦啦啦',
-          desc: '描述描述',
-          path: '/page/user?id=123'
-      }
+    return {
+      title: '啦啦啦啦',
+      desc: '描述描述',
+      path: '/page/user?id=123'
     }
+  }
 
 }
 </script>

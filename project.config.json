@@ -29,13 +29,13 @@
 			"list": []
 		},
 		"miniprogram": {
-			"current": 19,
+			"current": 0,
 			"list": [
 				{
 					"id": 0,
 					"name": "商品详情",
 					"pathName": "pages/goods/main",
-					"query": "id=140",
+					"query": "id=139",
 					"scene": "1096"
 				},
 				{
@@ -123,10 +123,10 @@
 					"query": ""
 				},
 				{
-					"id": -1,
+					"id": 15,
 					"name": "退货中",
 					"pathName": "pages/tuiHuoZhong/main",
-					"query": ""
+					"query": "order_goods_id=27"
 				},
 				{
 					"id": 16,
@@ -150,10 +150,35 @@
 					"scene": "1096"
 				},
 				{
-					"id": -1,
+					"id": 19,
 					"name": "订单详情",
 					"pathName": "pages/dingDanXiangQing/main",
-					"query": "orderId=29"
+					"query": "orderId=37"
+				},
+				{
+					"id": -1,
+					"name": "评价",
+					"pathName": "pages/pingJia/main",
+					"query": "orderId=40"
+				},
+				{
+					"id": -1,
+					"name": "订单退货中",
+					"pathName": "pages/daiTuiHuo/main",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "佣金",
+					"pathName": "pages/yongjin/main",
+					"query": ""
+				},
+				{
+					"id": 23,
+					"name": "退款详情",
+					"pathName": "pages/tuiKuanDetail/main",
+					"query": "goodsId=140&num=1&orderGoodsId=11",
+					"scene": "1096"
 				}
 			]
 		}

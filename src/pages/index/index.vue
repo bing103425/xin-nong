@@ -21,6 +21,10 @@
           <p class="goods-list-text">{{item.goods_name}}</p>
           <mp-priceCart size="28" :redPrice="item.price" :goodsId="item.goods_id"></mp-priceCart>
         </li>
+        <li class="all100">
+          <p v-if="isNextPage" class="all-more">上拉加载更多</p>
+          <p v-else class="all-nomore">我是有底线的</p>
+        </li>
       </ul>
     </div>
   </div>
@@ -35,9 +39,11 @@ import threeTips from '@/components/threeTips'
 export default {
   data () {
     return {
-      goodsList:[],
+      goodsList:[],    //【热卖商品】列表
       imgUrls: [],
-      indexCardData:[]
+      indexCardData:[],       //横向滚动的【每日时令】数据列表
+      page: 1,      //分页
+      isNextPage: true      //是否还有下一页
     }
   },
   computed: {
@@ -53,9 +59,36 @@ export default {
     'mp-threeTips': threeTips
   },
 
+  //上拉加载更多
+  onReachBottom() {
+    var that = this 
+    if(that.isNextPage){
+      // 显示加载图标
+      wx.showLoading({
+        title: '玩命加载中'
+      })    // 页数+1
+      wx.request({
+        url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getHotGoods',
+        method:'post',
+        dataType:'json',
+        data:{
+          token: that.$store.state.token,
+          p: that.page
+        },
+        success: function(res) {
+          wx.hideLoading()
+          that.goodsList = that.goodsList.concat(res.data.data.hot_list)
+          if(res.data.data.list_page == that.page){
+            that.isNextPage = false
+          }
+          that.page++
+        }
+      })
+    }
+  },
   methods: {
     toDetailPage(goodsId){
-      wx.redirectTo({
+      wx.navigateTo({
         url: '/pages/goods/main?id='+goodsId
       })
     }
@@ -63,6 +96,12 @@ export default {
 
   mounted(){
     var that = this
+    
+    var pages = getCurrentPages() //获取加载的页面
+    var currentPage = pages[pages.length-1] //获取当前页面的对象
+    var options = currentPage.options
+    console.log('二维码获取',decodeURIComponent(options.uid))
+    
     //获取Banner图
     wx.request({
       url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getIndexAdv',
@@ -70,12 +109,6 @@ export default {
       dataType:'json',
       success: function(res) {
         that.imgUrls = res.data.data.adv_list
-        // var str = res.data.data
-        // str.forEach(item => {
-        //   //时间戳转换正常日期
-        //   item.description = item.description.replace(regExp ,'http://xcx_cx_cx_shop.idc.gcsci.net'+regExp.exec( item.description)[0])
-        // })
-        // that.goodsRichText = str
       }
     })
     
@@ -85,7 +118,11 @@ export default {
       method:'post',
       dataType:'json',
       success: function(res) {
-        that.goodsList = res.data.data
+        that.goodsList = res.data.data.hot_list
+        if(res.data.data.list_page == that.page){
+          that.isNextPage = false
+        }
+        that.page++
       }
     })
     //获取推荐商品列表
@@ -145,5 +182,25 @@ export default {
 }
 .goods-item:nth-last-child(1){
   margin-bottom: none;
+}
+.all-more{
+  margin: 40rpx;
+  text-align: center;
+  position: relative;
+  left: -10rpx;
+  font-size: 24rpx;
+  color: #0095e0;
+  text-decoration: underline;
+}
+.all-nomore{
+  margin: 40rpx;
+  text-align: center;
+  position: relative;
+  left: -10rpx;
+  font-size: 24rpx;
+  color: #999;
+}
+.all100{
+  width: 100%;
 }
 </style>

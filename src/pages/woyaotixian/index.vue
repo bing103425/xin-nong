@@ -3,13 +3,12 @@
     <div class="tx-top-box flex-space-between">
       <div>
         <p>可提现佣金（元）</p>
-        <p class="red-text tx-money">￥0</p>
+        <p class="red-text tx-money">￥{{data.user_surplus_withdraw}}</p>
       </div>
-      <div class="tx-btn">提现所有</div>
     </div>
     <div class="tx-item flex-flex-start">
       <div class="tx-title">提现佣金</div>
-      <input type="text" name="" id="" placeholder="输入要提现佣金" class="tx-input">
+      <input type="text" name="" id="" placeholder="输入要提现佣金" class="tx-input" v-model="withdrawMoney">
     </div>
     <div class="tx-item flex-flex-start">
       <div class="tx-title">提现到</div>
@@ -24,7 +23,13 @@
         </label>
       </checkbox-group>
     </div>
-    <div class="tx-tjsq-btn">提交申请</div>
+    <div class="tx-item flex-flex-start tx-tip">
+      <span class="red-text">提示：最低提现金额为{{data.withdraw_cash_min}}元，必须为{{data.withdraw_multiple}}的整数倍</span>
+    </div>
+    <div class="tx-item tx-tipa">
+      注：{{data.withdraw_message}}
+    </div>
+    <div class="tx-tjsq-btn" @click="submit()">提交申请</div>
   </div>
 </template>
 
@@ -33,8 +38,10 @@ export default {
   data () {
     return {
       checkboxItems: [
-        { name: '微信', value: '0', checked: false }
-      ]
+        { name: '微信', value: '0', checked: true }
+      ],
+      data:{},
+      withdrawMoney:''
     }
   },
   computed: {
@@ -44,6 +51,68 @@ export default {
   },
 
   methods: {
+    submit(){
+      var that = this
+      if(that.withdrawMoney<that.data.withdraw_cash_min){
+        wx.showToast({
+          title: '最低提现'+that.data.withdraw_cash_min+'元哦',
+          icon: 'none',
+          duration: 2000
+        })
+      }else{
+        if(that.isXiaoShu(that.withdrawMoney)){
+          wx.request({
+            url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/distribution/submitWithDraw',
+            method:'post',
+            dataType:'json',
+            data: {
+              token: that.$store.state.token,
+              withdraw_money: Number(that.withdrawMoney)
+            },
+            success: function(res) {
+              if(res.data.code == 0){
+                wx.showToast({
+                  title: res.data.info,
+                  icon: 'none',
+                  duration: 2000
+                })
+                
+                setTimeout(() => {
+                  wx.redirectTo({
+                    url: '/pages/fenxiaozhongxin/main'
+                  })
+                }, 2000)
+              }else if(res.data.code == 1){
+                wx.showToast({
+                  title: res.data.info,
+                  icon: 'none',
+                  duration: 2000
+                })
+              }
+            }
+          })
+        }else{
+          wx.showToast({
+            title: '只能提现整数哦',
+            icon: 'none',
+            duration: 2000
+          })
+        }
+      }
+    },
+    isXiaoShu(num){
+      //判断数字是否是整数
+      var y = String(num).indexOf(".") + 1;//获取小数点的位置
+      var count = String(num).length - y;//获取小数点后的个数
+      if(y > 0) {
+        //不是整数
+        return false
+      } else {
+        //是整数
+        return true
+      }
+
+    },
     checkboxChange(e) {
       console.log('checkbox发生change事件，携带value值为：' + e.mp.detail.value);
       var checkboxItems = this.checkboxItems, values = e.mp.detail.value;
@@ -57,13 +126,23 @@ export default {
           }
         }
       }
-      this.checkboxItems = checkboxItems;
+      this.checkboxItems = checkboxItems
     }
   },
 
-  created () {
-  },
   mounted(){
+    var that = this
+    wx.request({
+      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/distribution/goWithdraw',
+      method:'post',
+      dataType:'json',
+      data: {
+        token: that.$store.state.token
+      },
+      success: function(res) {
+        that.data = res.data.data
+      }
+    })
   }
 }
 </script>
@@ -126,5 +205,12 @@ export default {
   font-size: 34rpx;
   border-radius: 6rpx;
   margin: 140rpx auto;
+}
+.tx-tip{
+  font-size: 28rpx;
+}
+.tx-tipa{
+  font-size: 28rpx;
+  line-height: 100rpx;
 }
 </style>

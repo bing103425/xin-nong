@@ -70,7 +70,8 @@ export default {
                   rawData: rawData,
                   signature: signature,
                   encryptedData: encryptedData,
-                  iv: iv
+                  iv: iv,
+                  uid: 2
                 },
                 success: function(res) {
                   that.$store.dispatch("updateOpenIdAndToken",res.data.data.info)   //将返回的token信息存贮到vuex

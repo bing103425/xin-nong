@@ -2,7 +2,7 @@
   <div>
     <mp-mineCard></mp-mineCard>
     <ul class="list">
-      <a href="/pages/woDeDingDan/main" class="mine-dingdan-a">
+      <a href="/pages/quanBuDingDan/main" class="mine-dingdan-a">
         <li class="text-box">
           <img src="../../assets/image/order@2x.png" class="icon-order">
           <span>我的订单</span>
@@ -46,71 +46,81 @@ export default {
   data () {
     return {
       iconList:[{
-        width:'52rpx',
-        height:'42rpx',
-        bgImg:'../../assets/image/dfk@2x.png',
-        text:'待付款',
-        href:'/pages/daiFuKuan/main'
-      },{
-        width:'44rpx',
-        height:'42rpx',
-        bgImg:'../../assets/image/dfh@2x.png',
-        text:'待发货',
-        href:'/pages/daiFaHuo/main'
-      },{
-        width:'44rpx',
-        height:'42rpx',
-        bgImg:'../../assets/image/dsh@2x.png',
-        text:'待收货',
-        href:'/pages/daiShouHuo/main'
-      },{
-        width:'42rpx',
-        height:'42rpx',
-        bgImg:'../../assets/image/dpl@2x.png',
-        text:'待评价',
-        href:'/pages/daiPingJia/main'
-      },{
-        width:'40rpx',
-        height:'44rpx',
-        bgImg:'../../assets/image/thz@2x.png',
-        text:'退货中',
-        href:'/pages/tuiHuoZhong/main'
-      }],
+          width:'52rpx',
+          height:'42rpx',
+          bgImg:'../../assets/image/dfk@2x.png',
+          text:'待付款',
+          href:'/pages/daiFuKuan/main'
+        },{
+          width:'44rpx',
+          height:'42rpx',
+          bgImg:'../../assets/image/dfh@2x.png',
+          text:'待发货',
+          href:'/pages/daiFaHuo/main'
+        },{
+          width:'44rpx',
+          height:'42rpx',
+          bgImg:'../../assets/image/dsh@2x.png',
+          text:'待收货',
+          href:'/pages/daiShouHuo/main'
+        },{
+          width:'42rpx',
+          height:'42rpx',
+          bgImg:'../../assets/image/dpl@2x.png',
+          text:'待评价',
+          href:'/pages/daiPingJia/main'
+        },{
+          width:'40rpx',
+          height:'44rpx',
+          bgImg:'../../assets/image/thz@2x.png',
+          text:'退货中',
+          href:'/pages/daiTuiHuo/main'
+        }],
 
-      bottomList:[{
-        width:'32rpx',
-        height:'32rpx',
-        bgImg:'../../assets/image/dz@2x.png',
-        text:'收货地址',
-        href:'/pages/shouHuoDiZhi/main'
-      },{
-        width:'32rpx',
-        height:'32rpx',
-        bgImg:'../../assets/image/number@2x.png',
-        text:'账号绑定',
-        href:'/pages/zhangHaoBangDing/main'
-      },{
-        width:'30rpx',
-        height:'28rpx',
-        bgImg:'../../assets/image/service@2x.png',
-        text:'在线客服',
-        href:'/pages/zaiXianKeFu/main'
-      },{
-        width:'32rpx',
-        height:'28rpx',
-        bgImg:'../../assets/image/fxzx.png',
-        text:'分销中心',
-        href:'/pages/fenxiaozhongxin/main'
-      },{
-        width:'30rpx',
-        height:'30rpx',
-        bgImg:'../../assets/image/share2@2x.png',
-        text:'分享',
-        href:'/pages/fenXiang/main'
+        bottomList:[{
+          width:'32rpx',
+          height:'32rpx',
+          bgImg:'../../assets/image/dz@2x.png',
+          text:'收货地址',
+          href:'/pages/shouHuoDiZhi/main'
+        },{
+          width:'32rpx',
+          height:'32rpx',
+          bgImg:'../../assets/image/number@2x.png',
+          text:'账号绑定',
+          href:'/pages/zhangHaoBangDing/main'
+        },{
+          width:'30rpx',
+          height:'28rpx',
+          bgImg:'../../assets/image/service@2x.png',
+          text:'在线客服',
+          href:'/pages/zaiXianKeFu/main'
+        },{
+          width:'32rpx',
+          height:'28rpx',
+          bgImg:'../../assets/image/fxzx.png',
+          text:'分销中心',
+          href:'/pages/fenxiaozhongxin/main'
+        },{
+          width:'30rpx',
+          height:'30rpx',
+          bgImg:'../../assets/image/share2@2x.png',
+          text:'分享',
+          href:'/pages/fenXiang/main'
       }]
     }
   },
-
+  mounted(){
+    //这个接口我也不知道请求了干嘛，后端让的。  （一个耿直的微笑）
+    //好像是后端要处理订单状态？？？
+    wx.request({
+      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=wx/task/load_task',
+      method:'post',
+      dataType:'json',
+      success: function(res) {
+      }
+    })
+  },
   components: {
     'mp-mineCard':mineCard
   }

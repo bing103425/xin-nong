@@ -30,7 +30,7 @@ export default {
   },
   methods:{
     toDetailPage(goodsId){
-      wx.redirectTo({
+      wx.navigateTo({
         url: '/pages/goods/main?id='+goodsId
       })
     }

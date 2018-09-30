@@ -52,44 +52,21 @@ export default {
       isAllowRequest:true,           //是否允许发送请求（信息填写完整，地址支持）
       isAddOrUpdate :'add',           //是添加还是更新
       checked : false,           //是否设为默认地址的开关
+      urlCanShu : '',           //url带的参数
       mad_id :''           //更新时的地址ID
     }
   },
   mounted(){
     var pages = getCurrentPages() //获取加载的页面
     var currentPage = pages[pages.length-1] //获取当前页面的对象
-    var addInfo = currentPage.options 
+    this.urlCanShu = currentPage.options
     this.name = this.mobile = this.address = ''
     this.province = this.city = this.district = 1
     this.dzActive = 0
-    this.checked = false
     this.region = ['北京市', '北京市', '东城区']
-    if(Object.keys(currentPage.options).length){
-      //是否为默认地址
-      if(addInfo.isDefault == '1'){
-        this.checked = true
-      }else{
-        this.checked = false
-      }
-      this.name = addInfo.consigner
-      this.mobile = addInfo.mobile
-      this.address = addInfo.address
-      var addArray = []
-      this.dzActive = Number(addInfo.alias)-1
-      addArray.push(addInfo.province,addInfo.city,addInfo.district)
-      var addId = this.addStrToId(addInfo.province,addInfo.city,addInfo.district)
-      this.province = addId[0]
-      this.city = addId[1]
-      this.district = addId[2]
-      this.region = addArray
-      this.mad_id = addInfo.id
-      this.isAddOrUpdate = 'update'
-    }
-    console.log(addInfo)
   },
   computed:{
     default(){
-      //默认地址返回1，非默认返回0
       if(this.checked){
         return 1
       }else{
@@ -99,11 +76,9 @@ export default {
   },
   methods: {
     switchChange(e){
-      //切换开关
       this.checked = !this.checked
     },
     addStrToId(province,city,district){
-      //地址文字转ID
       var resultProvince
       var resultCity
       var resultDistrict
@@ -165,7 +140,7 @@ export default {
               if(res.data.code == 0){
                 setTimeout(()=>{
                   wx.redirectTo({
-                    url: '/pages/shouHuoDiZhi/main',
+                    url: '/pages/dingDanAdd/main?theAllNum='+that.urlCanShu.theAllNum+"&finallyPrice="+that.urlCanShu.finallyPrice+"&goodsIds="+that.urlCanShu.goodsIds+"&numArr="+that.urlCanShu.numArr
                   })
                 },2000)
               }

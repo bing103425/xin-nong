@@ -44,16 +44,33 @@ export default {
       display: 'none',
       opacity: 0,
       transition: '.2s',
-      num: 1,          //商品数量
-      goodsNum: '',          //商品数量
+      num: 1,          //购买商品数量
+      goodsNum: '',          //购物车商品数量
+      goodsInfo:{album_pictures:[]},     //商品信息
       type: 'cart'      //判断是加入购物车还是立即购买
     }
   },
-  props:['goodsInfo'],
+  props:['goodsId'],
   computed:{
     finallyPrice(){
       var totalPrice = (this.num * Number(this.goodsInfo.price)).toFixed(2)
       return totalPrice
+    }
+  },
+  watch:{
+    goodsId(){
+      var that = this
+      wx.request({
+        url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getGoodsDetail',
+        method:'post',
+        dataType:'json',
+        data:{
+          gid: that.goodsId.id
+        },
+        success: function(res) {
+          that.goodsInfo = res.data.data
+        }
+      })
     }
   },
   mounted(){
@@ -71,7 +88,6 @@ export default {
           token: that.$store.state.token
         },
         success: function(res) {
-          console.log(res.data.data)
           that.goodsNum = 0
           for(let i=0;i<res.data.data.length;i++){
             that.goodsNum += res.data.data[i].num
@@ -114,7 +130,7 @@ export default {
         var theAllNum = this.num
         var finallyPrice = this.finallyPrice
         
-        wx.redirectTo({
+        wx.navigateTo({
           url: '/pages/queRenDingDan/main?theAllNum='+theAllNum+'&&finallyPrice='+finallyPrice+'&&goodsIds='+(that.goodsInfo.goods_id).toString()+'&&numArr='+theAllNum
         })
       }

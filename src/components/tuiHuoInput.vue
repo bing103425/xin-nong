@@ -43,7 +43,7 @@ export default {
         jianjiao: false,
         isBiTian:true,
         inputType:'text',
-        value:'35.00',
+        value:'',
         disabled:true,
       },{
         title:'退货退款说明',
@@ -57,9 +57,29 @@ export default {
         jianjiao: false,
         isBiTian:true,
         inputType:'text',
-        value:'13965874526',
+        value:'',
         disabled:''
-      }]
+      }],
+      mobile:''
+    }
+  },
+  props:['goodsInfo'],
+  watch:{
+    mobile() {
+      this.mobile = this.thData[4].value
+    }
+  },
+  computed:{
+    data(){
+      this.thData[2].value = Number(this.goodsInfo.return_money).toFixed(2)
+      console.log(this.mobile)
+    //   var mobile = this.thData[4].value
+    //   if(mobile){
+    //     this.thData[4].value = mobile
+    //   }else{
+    //     this.thData[4].value = this.goodsInfo.mobile
+    //   }
+    //   return
     }
   },
   methods:{
@@ -67,18 +87,18 @@ export default {
       let _this = this
       if(type=='isGetGoods'){
         wx.showActionSheet({
-          itemList: this.isGetGoodsList,
+          itemList: this.goodsInfo.refund_type,
           success: function (res) {
-            console.log("index：" + res.tapIndex, "用户选的值为：" + _this.isGetGoodsList[res.tapIndex])
-            _this.thData[0].value = _this.isGetGoodsList[res.tapIndex]
+            console.log("index：" + res.tapIndex, "用户选的值为：" + _this.goodsInfo.refund_type[res.tapIndex])
+            _this.thData[0].value = _this.goodsInfo.refund_type[res.tapIndex]
           }
         })
       }else if(type=='reason'){
         wx.showActionSheet({
-          itemList: this.reasonList,
+          itemList: this.goodsInfo.refund_reason,
           success: function (res) {
-            console.log("index：" + res.tapIndex, "用户选的值为：" + _this.reasonList[res.tapIndex])
-            _this.thData[1].value = _this.reasonList[res.tapIndex]
+            console.log("index：" + res.tapIndex, "用户选的值为：" + _this.goodsInfo.refund_reason[res.tapIndex])
+            _this.thData[1].value = _this.goodsInfo.refund_reason[res.tapIndex]
           }
         })
       }

@@ -12,45 +12,70 @@
       <div class="weui-tab__panel">
         <div class="weui-tab__content" :hidden="activeIndex != 0">
           <ul class="txmx-list">
-            <li class="txmx-item flex-space-between" v-for="(item,index) in txmxData" :key="index">
+            <li class="txmx-item flex-space-between" v-for="(item,index) in wholeData" :key="index">
               <div>
-                <p class="txmx-title">{{item.title}}</p>
-                <p class="txmx-time">{{item.time}}</p>
+                <p class="txmx-title">{{item.status_name}}</p>
+                <p class="txmx-time">{{item.ask_for_date}}</p>
               </div>
-              <p class="txmx-money" :class="{'blace-text' : item.type==1,'green-text' : item.type==2,'grey-text' : item.type==0,}">{{item.money}}</p>
+              <p class="txmx-money" :class="{'blace-text' : item.status==0,'green-text' : item.status==1,'grey-text' : item.status==-1,}">+{{item.cash}}</p>
             </li>
           </ul>
         </div>
-        <div class="weui-tab__content" :hidden="activeIndex != 1">待打款</div>
-        <div class="weui-tab__content" :hidden="activeIndex != 2">已打款</div>
-        <div class="weui-tab__content" :hidden="activeIndex != 3">无效</div>
+
+        <!-- 待打款 -->
+        <div class="weui-tab__content" :hidden="activeIndex != 1">
+          <ul class="txmx-list">
+            <li class="txmx-item flex-space-between" v-for="(item,index) in daiDaKuanData" :key="index">
+              <div>
+                <p class="txmx-title">{{item.status_name}}</p>
+                <p class="txmx-time">{{item.ask_for_date}}</p>
+              </div>
+              <p class="txmx-money" :class="{'blace-text' : item.status==0,'green-text' : item.status==1,'grey-text' : item.status==-1}">+{{item.cash}}</p>
+            </li>
+          </ul>
+        </div>
+
+        <!-- 已打款 -->
+        <div class="weui-tab__content" :hidden="activeIndex != 2">
+          <ul class="txmx-list">
+            <li class="txmx-item flex-space-between" v-for="(item,index) in yiDaKuanData" :key="index">
+              <div>
+                <p class="txmx-title">{{item.status_name}}</p>
+                <p class="txmx-time">{{item.ask_for_date}}</p>
+              </div>
+              <p class="txmx-money" :class="{'blace-text' : item.status==0,'green-text' : item.status==1,'grey-text' : item.status==-1}">+{{item.cash}}</p>
+            </li>
+          </ul>
+        </div>
+
+
+        <!-- 无效 -->
+        <div class="weui-tab__content" :hidden="activeIndex != 3">
+          <ul class="txmx-list">
+            <li class="txmx-item flex-space-between" v-for="(item,index) in wuXiaoData" :key="index">
+              <div>
+                <p class="txmx-title">{{item.status_name}}</p>
+                <p class="txmx-time">{{item.ask_for_date}}</p>
+              </div>
+              <p class="txmx-money" :class="{'blace-text' : item.status==0,'green-text' : item.status==1,'grey-text' : item.status==-1}">+{{item.cash}}</p>
+            </li>
+          </ul>
+        </div>
       </div>
+      <div class="dth-tip" v-if="hasData == false">还没有提现明细哦~</div>
     </div>
   </div>
 </template>
 
 <script>
+import { timestampToTime } from '@/utils/index'
 export default {
   data () {
     return {
-      tabs: ["全部", "待打款", "已打款", "无效"],
+      tabs: ["全部", "未打款", "已打款", "无效"],
       activeIndex: 0,
-      txmxData:[{
-        title:'待打款',
-        time:'2018-06-20',
-        money:'-2.25',
-        type: 2
-      },{
-        title:'已打款',
-        time:'2018-06-20',
-        money:'-2.25',
-        type: 1
-      },{
-        title:'无效',
-        time:'2018-06-20',
-        money:'-2.25',
-        type: 0
-      }]
+      wholeData:[],
+      hasData: true
     }
   },
   computed: {
@@ -67,22 +92,64 @@ export default {
       if (this.activeIndex == 3) {
         return 'weui-navbar__slider_3'
       }
-    }
-  },
-
-  components: {
+    },
+    daiDaKuanData(){
+      let arr1 = []
+      for(let i=0;i<this.wholeData.length;i++){
+        if(this.wholeData[i].status == 0){
+          arr1.push(this.wholeData[i])
+        }
+      }
+      return arr1
+    },
+    yiDaKuanData(){
+      let arr2 = []
+      for(let i=0;i<this.wholeData.length;i++){
+        if(this.wholeData[i].status == 1){
+          arr2.push(this.wholeData[i])
+        }
+      }
+      return arr2
+    },
+    wuXiaoData(){
+      let arr3 = []
+      for(let i=0;i<this.wholeData.length;i++){
+        if(this.wholeData[i].status == -1){
+          arr3.push(this.wholeData[i])
+        }
+      }
+      return arr3
+    },
   },
 
   methods: {
     tabClick(e) {
-      console.log(e);
-      this.activeIndex = e.currentTarget.id;
+      console.log(e.currentTarget.id)
+      this.activeIndex = e.currentTarget.id
     }
   },
 
-  created () {
-  },
   mounted(){
+    var that = this
+    wx.request({
+      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/distribution/memberWithDrawList',
+      method:'post',
+      dataType:'json',
+      data: {
+        token: that.$store.state.token
+      },
+      success: function(res) {
+        if(res.data.code == 0){
+          if(!res.data.data.length){
+            that.hasData = false
+          }
+          that.wholeData = res.data.data
+          that.wholeData.forEach(element => {
+            element.ask_for_date = timestampToTime((element.ask_for_date)*1000,'day')
+          })
+        }
+      }
+    })
   }
 }
 </script>

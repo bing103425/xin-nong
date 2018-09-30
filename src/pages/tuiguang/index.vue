@@ -1,38 +1,43 @@
 <template>
-  <div class="">
-    <p @click="qrcode">我要推广</p>
-    
+  <div class="con-tainer">
+    <img :src="qrcode" class="fx-qrcode">
   </div>
 </template>
 
 <script>
 export default {
-  data () {
+  data(){
     return {
+      qrcode:''
     }
-  },
-  computed: {
-  },
-
-  components: {
-  },
-
-  methods: {
-    qrcode(){
-      wx.scanCode({
-        success: (res) => {
-          console.log(res)
-        }
-      })
-    }
-  },
-
-  created () {
   },
   mounted(){
+    var that = this
+    wx.request({
+      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/wx/createQrcodeC',
+      method:'post',
+      dataType:'json',
+      data: {
+        token: that.$store.state.token
+      },
+      success: function(res) {
+        that.qrcode = res.data.data.qrcode
+      },
+      fail(err){
+        console.log(err)
+      }
+    })
   }
 }
 </script>
 
 <style scoped>
+.fx-qrcode{
+  width: 470rpx;
+  height: 535rpx;
+  position: absolute;
+  top: 34%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+}
 </style>

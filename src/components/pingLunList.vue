@@ -10,34 +10,64 @@
         </div>
         <p class="date">{{item.addtime}}</p>
         <p class="content">{{item.content}}</p>
+        
         <div class="image-box">
-          <img alt="" class="content-img" v-for="(item,index2) in item.image" :key="index2" :src="item">
+          <block v-for="(innerItem,innerIndex) in item.image" :key="innerIndex">
+            <div class="weui-uploader__file pll-nomar" @click="predivImage" :id="innerItem">
+              <img alt="" class="content-img" :src="innerItem">
+            </div>
+          </block>
         </div>
       </li>
+      <div v-if="hasPingLunData == false" class="goods-no-content">啊呀，暂无内容~</div>
     </ul>
   </div>
 </template>
 
 <script>
+import { timestampToTime } from '@/utils/index'
 export default {
   data(){
-    return{}
+    return{
+      hasPingLunData: true    //是否有评论列表
+    }
   },
   props: ['pingLunData'],
   methods:{
-    tampToTime(timestamp) {
-      var date = new Date(timestamp * 1000);//时间戳为10位需*1000，时间戳为13位的话不需乘1000
-      var Y = date.getFullYear() + '-';
-      var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
-      var D = date.getDate() + ' ';
-      return Y + M + D 
+    predivImage(e) {
+      console.log(e);
+      wx.previewImage({
+        current: e.currentTarget.id, // 当前显示图片的http链接
+        urls: this.files // 需要预览的图片http链接列表
+      })
+    },
+  },
+  watch:{
+    pingLunData(){
+      if(this.pingLunData.length){
+        this.hasPingLunData = true
+      }else{
+        this.hasPingLunData = false
+      }
     }
   },
   computed:{
+    files(){
+      let arr = []
+      this.pingLunData.forEach(element => {
+        if(element.image){
+          element.image.forEach(item => {
+            arr.push(item)
+          })
+        }
+      })
+      return arr
+    },
     newPingLunData(){
+      console.log('this.pingLunData',this.pingLunData)
       this.pingLunData.forEach(item => {
         //时间戳转换正常日期
-        item.addtime = this.tampToTime(item.addtime);
+        item.addtime = timestampToTime(item.addtime,'day')
       })
       return this.pingLunData
     }
@@ -46,6 +76,14 @@ export default {
 </script>
 
 <style>
+.goods-no-content{
+  width: 100%;
+  margin: 240rpx 0;
+  text-align: center;
+  box-sizing: border-box;
+  font-size: 24rpx;
+  color: #999;
+}
 .bottom-box{
    width: 750rpx;
    padding: 40rpx 24rpx 0 30rpx;
@@ -97,5 +135,8 @@ export default {
   justify-content: flex-start;
   align-items: center;
   padding-bottom: 14rpx;
+}
+.pll-nomar{
+  margin: 0;
 }
 </style>

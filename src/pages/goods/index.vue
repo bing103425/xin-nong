@@ -43,7 +43,7 @@
         </div>
       </div>
 
-    <mp-goodsIndexbottomCart :goodsInfo="goodsInfo" @pageDown="pageDown()" @noDown="noDown(aa)"></mp-goodsIndexbottomCart>
+    <mp-goodsIndexbottomCart :goodsId="goodsId" @pageDown="pageDown()" @noDown="noDown(aa)"></mp-goodsIndexbottomCart>
   </div>
 </template>
 
@@ -57,6 +57,7 @@ export default {
   data () {
     return {
       length:'',
+      page: 1,
       goodsInfo:{album_pictures:[]},
       indicator:false,
       autoplay:false,
@@ -65,7 +66,8 @@ export default {
       activeIndex: 0,
       goodsId: '',    //url参数
       pingLunData:[],
-      height:'',       //禁止页面下拉
+      isNextPage:'',       //评论列表是否还有下一页
+      height:'',       //限制高度
       overflow:''       //禁止页面下拉
     }
   },
@@ -81,6 +83,9 @@ export default {
     var currentPage = pages[pages.length-1] //获取当前页面的对象
     this.goodsId = currentPage.options
     var that = this
+    that.goodsInfo = []
+    that.activeIndex = 0
+    that.pingLunData = []
     var regExp = /\/upload.*?\jpg/g
     wx.request({
       url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getGoodsDetail',
@@ -90,8 +95,13 @@ export default {
         gid: that.goodsId.id
       },
       success: function(res) {
-        res.data.data.description = res.data.data.description.replace(regExp ,'http://xcx_cx_cx_shop.idc.gcsci.net'+regExp.exec( res.data.data.description)[0])
+        console.log(res.data.data.description)
+        if(regExp.exec( res.data.data.description)){
+          console.log('0000')
+          res.data.data.description = res.data.data.description.replace(regExp ,'http://xcx_cx_cx_shop.idc.gcsci.net'+regExp.exec( res.data.data.description)[0])
+        }
         that.goodsInfo = res.data.data
+        console.log('父级页面的',that.goodsInfo)
         that.length = res.data.data.album_pictures.length
       }
     })
@@ -108,6 +118,35 @@ export default {
       }
     }
   },
+  //上拉加载更多
+  onReachBottom() {
+    var that = this 
+    if(that.isNextPage && that.activeIndex == 1){
+      // 显示加载图标
+      console.log(that.page)
+      wx.showLoading({
+        title: '玩命加载中'
+      })    // 页数+1
+      wx.request({
+        url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getGoodsEvaluate',
+        method:'post',
+        dataType:'json',
+        data:{
+          token: that.$store.state.token,
+          p: that.page
+        },
+        success: function(res) {
+          wx.hideLoading()
+          that.pingLunData = that.pingLunData.concat(res.data.data.list)
+          if(res.data.data.list_page == that.page){
+            that.isNextPage = false
+          }
+          that.page++
+        }
+      })
+    }
+  },
+
   methods: {
     noDown(){
       this.height = '100vh'
@@ -134,8 +173,11 @@ export default {
             gid: that.goodsId.id
           },
           success: function(res) {
-            that.pingLunData = res.data.data.lists
-            console.log(res.data.data.lists)
+            that.pingLunData = res.data.data.list
+            if(res.data.data.list_page == that.page){
+              that.isNextPage = false
+            }
+            that.page++
           }
         })
       }

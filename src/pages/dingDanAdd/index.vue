@@ -1,19 +1,17 @@
 <template>
   <div class="con-tainer">
     <ul class="sh-list">
-      <li class="sh-item flex-flex-start" v-for="(item,index) in addList" :key="index" @click="editAdd(item)">
+      <li class="sh-item flex-flex-start" v-for="(item,index) in addList" :key="index" @click="goBackToOrder(item.id)">
         <div class="sh-text-box">
           <span class="bold">{{item.consigner}}</span>&nbsp;&nbsp;&nbsp;&nbsp;
           <span>{{item.mobile}}</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="sh-alias" v-if="item.alias == 1">公司</span><span class="sh-alias" v-else-if="item.alias == 2">自己</span><span class="sh-alias" v-else-if="item.alias == 3">亲戚</span><span class="sh-alias" v-else-if="item.alias == 4">其他</span>
           <span class="sh-alias sh-default" v-if="item.is_default == 1">默认</span>
           <div class="sh-add">{{item.province}}{{item.city}}{{item.district}}{{item.address}}</div>
         </div>
-        <div class="sh-deletAdd-btn red-text" @click.stop="deletAdd(index,item.id)">删除</div>
       </li>
     </ul>
-    <a href="/pages/addShouHuoDiZhi/main">
-      <div class="sh-btn">新增收货信息</div>
-    </a>
+
+    <div class="sh-btn" @click="toDingDanPutInAdd()">新增收货信息</div>
   </div>
 </template>
 
@@ -22,45 +20,19 @@ import add from '@/add.json'
 export default {
   data () {
     return {
-      addList:''
+      addList:'',
+      urlCanShu:{}
     }
   },
   methods: {
-    editAdd(item){
+    toDingDanPutInAdd(){
       wx.navigateTo({
-        url: '/pages/addShouHuoDiZhi/main?mobile='+item.mobile+'&&consigner='+item.consigner+'&&province='+item.province+'&&city='+item.city+'&&district='+item.district+'&&address='+item.address+'&&alias='+item.alias+'&&id='+item.id+'&&isDefault='+item.is_default
+        url: '/pages/dingDanPutInAdd/main?theAllNum='+this.urlCanShu.theAllNum+"&finallyPrice="+this.urlCanShu.finallyPrice+"&goodsIds="+this.urlCanShu.goodsIds+"&numArr="+this.urlCanShu.numArr
       })
     },
-    deletAdd(index,id){
-      var that = this
-      wx.showModal({
-        title:'提示',
-        content:'是否确认删除？',
-        success:function(res){
-          if(res.confirm){
-            //用户点击确认删除后
-            wx.request({
-              url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/delMemberAddress',
-              method:'post',
-              dataType:'json',
-              data: {
-                token: that.$store.state.token,
-                aid: id
-              },
-              success: function(res) {
-                that.addList.splice(index,1)
-                wx.showToast({
-                  title: '删除成功',
-                  icon: 'success',
-                  duration: 2000
-                })
-              },
-              fail(err){
-                console.log(err)
-              }
-            })
-          }
-        }
+    goBackToOrder(id){
+      wx.navigateTo({
+        url: '/pages/queRenDingDan/main?addId='+id+"&theAllNum="+this.urlCanShu.theAllNum+"&finallyPrice="+this.urlCanShu.finallyPrice+"&goodsIds="+this.urlCanShu.goodsIds+"&numArr="+this.urlCanShu.numArr
       })
     },
     idToAddStr(province,city,district){
@@ -95,6 +67,12 @@ export default {
   },
   mounted(){
     var that = this
+    var pages = getCurrentPages() //获取加载的页面
+    var currentPage = pages[pages.length-1] //获取当前页面的对象
+    this.urlCanShu = currentPage.options
+    
+    console.log('参数',this.urlCanShu)
+
     wx.request({
       url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/memberAddress',
       method:'post',

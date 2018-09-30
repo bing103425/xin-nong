@@ -30,6 +30,12 @@
     "pages/woDeDingDan/main",
     "pages/queRenDingDan/main",
     "pages/dingDanXiangQing/main",
+    "pages/pingJia/main",
+    "pages/dingDanAdd/main",
+    "pages/expressInfo/main",
+    "pages/daiTuiHuo/main",
+    "pages/dingDanPutInAdd/main",
+    "pages/tuiKuanDetail/main",
     "pages/addShouHuoDiZhi/main"
   ],
   "window": {

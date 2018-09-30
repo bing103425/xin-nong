@@ -1,9 +1,9 @@
 <template>
   <div>
     <ul class="ddxq-list">
-      <li class="big-text">{{data.shipping_status_name}}</li>
+      <li class="big-text">{{data.order_status_name}}</li>
       <li>订单号：{{data.order_no}}</li>
-      <li>订单状态：{{data.shipping_status_name}}</li>
+      <li>订单状态：{{data.order_status_name}}</li>
       <li>下单时间：{{data.create_time}}</li>
       <li>付款状态：{{data.pay_status_name}}</li>
       <li>配送方式：{{data.shipping_type_name}}</li>
@@ -11,10 +11,10 @@
     <div class="ddxq-add-box">收货地址：{{data.receiver_name}}-{{data.receiver_province}}-{{data.receiver_city}}-{{data.receiver_district}}-{{data.receiver_address}}</div>
     <div class="ddxq-add-last-box"> <div> 买家留言：</div> <div>{{data.buyer_message}}</div></div>
     <div class="ddxq-zhanwei"></div>
-    <mp-orderDetialCard :goodsInfo="data.order_goods"></mp-orderDetialCard>
+    <mp-orderDetialCard :goodsInfo="data.order_goods" :status="data.order_status"></mp-orderDetialCard>
     <ul>
-      <li class="flex-space-between ddxq-item"> <p>商品总金额：</p> <p>{{data.goods_money}}</p> </li>
-      <li class="flex-space-between ddxq-item"> <p>运费：</p> <p>0</p></li>
+      <li class="flex-space-between ddxq-item"> <p>商品总金额：</p> <p>{{data.order_money}}</p> </li>
+      <li class="flex-space-between ddxq-item"> <p>运费：</p> <p>包邮</p></li>
     </ul>
     <div class="ddxq-bottom-zw"></div>
   </div>
@@ -23,6 +23,7 @@
 <script>
 import add from '@/add.json'
 import orderDetialCard from "@/components/orderDetialCard"
+import { timestampToTime } from '@/utils/index'
 
 export default {
   data () {
@@ -35,25 +36,6 @@ export default {
     'mp-orderDetialCard': orderDetialCard
   },
   methods:{
-    timestampToTime(timestamp,type) {
-      var date = new Date(timestamp)    //时间戳为10位需*1000，时间戳为13位的话不需乘1000
-      var Y = date.getFullYear()
-      var M = '-' + (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1)
-      var D = '-' + ( date.getDate() < 10 ? '0' + date.getDate() : date.getDate() )
-      var h = '  ' + ( date.getHours() < 10 ? '0' + date.getHours() : date.getHours() )
-      var m = ':' + ( date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes() )
-      var s = ':' + ( date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds() )
-      var dateType = type || 'sec'
-      if(dateType =='month'){
-          return Y + M    //年月
-      }else if(dateType =='day'){
-          return Y + M + D    //年月日
-      }else if(dateType =='min'){
-          return Y + M + D + h + m    //年月日时分
-      }else if(dateType =='sec' || type == ''){
-          return Y + M + D + h + m + s    //年月日时分秒
-      }
-    },
     idToAddStr(province, city, district) {
       var resultProvince
       var resultCity
@@ -110,7 +92,7 @@ export default {
         that.data.receiver_province = addArr[0]
         that.data.receiver_city = addArr[1]
         that.data.receiver_district = addArr[2]
-        that.data.create_time = that.timestampToTime(1536976733000,'sec')
+        that.data.create_time = timestampToTime(1536976733000,'sec')
       }
     })
   }

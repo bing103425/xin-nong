@@ -70,167 +70,200 @@
 </template>
 
 <script>
-import priceCart from "@/components/priceCart"
+import priceCart from "@/components/priceCart";
 export default {
   data() {
     return {
-      theAllNum:0,
-      valueArray:[],
-      transition:'0.2s',
-      scrollLeft:[],
-      startX:'',
-      endX:'',
+      theAllNum: 0,
+      valueArray: [],
+      transition: "0.2s",
+      scrollLeft: [],
+      startX: "",
+      endX: "",
       finallyPrice: 0,
       jiesuanCheck: {
         checked: false
       },
-      checkboxItems: [],      //加入购物车内的全部商品
-      jieSuanGoods:[],         //要结算的商品
-      indexArray:[],         //要结算的商品索引
-    }
+      checkboxItems: [], //加入购物车内的全部商品
+      jieSuanGoods: [], //要结算的商品
+      indexArray: [] //要结算的商品索引
+    };
   },
-  mounted(){
+  onShow: function() {
     var that = this
+    this.valueArray = this.scrollLeft = this.checkboxItems = this.jieSuanGoods = this.indexArray = []
+    this.jiesuanCheck = {
+      checked: false
+    }
+    this.finallyPrice = this.theAllNum = 0
     wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/getCartInfo',
-      method:'post',
-      dataType:'json',
+      url: "http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/getCartInfo",
+      method: "post",
+      dataType: "json",
       data: {
         token: that.$store.state.token
       },
       success: function(res) {
-        console.log(res.data)
+        console.log(res.data);
         res.data.data.forEach(item => {
-          item.checked = false
-          item.goods_id = item.goods_id.toString()
-          item.price = Number(item.price)
-        })
-        that.checkboxItems = res.data.data
-        console.log(that.checkboxItems)
+          item.checked = false;
+          item.goods_id = item.goods_id.toString();
+          item.price = Number(item.price);
+        });
+        that.checkboxItems = res.data.data;
+        console.log(that.checkboxItems);
       },
-      fail(err){
-        console.log(err)
+      fail(err) {
+        console.log(err);
+      }
+    })
+  },
+  mounted() {
+    var that = this
+    wx.request({
+      url: "http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/getCartInfo",
+      method: "post",
+      dataType: "json",
+      data: {
+        token: that.$store.state.token
+      },
+      success: function(res) {
+        console.log(res.data);
+        res.data.data.forEach(item => {
+          item.checked = false;
+          item.goods_id = item.goods_id.toString();
+          item.price = Number(item.price);
+        });
+        that.checkboxItems = res.data.data;
+        console.log(that.checkboxItems);
+      },
+      fail(err) {
+        console.log(err);
       }
     })
   },
   computed: {
-    goodsIdArr(){
-       //要结算的商品Id数组
-       var idArr = []
+    goodsIdArr() {
+      //要结算的商品Id数组
+      var idArr = [];
       for (var i = 0; i < this.checkboxItems.length; i++) {
-        var result = this.checkboxItems[i].goods_id
-        idArr.push(result)
+        var result = this.checkboxItems[i].goods_id;
+        idArr.push(result);
       }
-      return idArr
+      return idArr;
     },
-    allNum(){
+    allNum() {
       //要结算的商品数量的数组
-      var theNumArr = []
+      var theNumArr = [];
       for (var i = 0; i < this.checkboxItems.length; i++) {
-        var result = this.checkboxItems[i].num
-        theNumArr.push(result)
+        var result = this.checkboxItems[i].num;
+        theNumArr.push(result);
       }
-      return theNumArr
+      return theNumArr;
     },
     totalPrice() {
-      var arr = []
+      var arr = [];
       for (var i = 0; i < this.checkboxItems.length; i++) {
-        var result = Number(this.checkboxItems[i].price) * this.checkboxItems[i].num
-        arr.push(result)
+        var result =
+          Number(this.checkboxItems[i].price) * this.checkboxItems[i].num;
+        arr.push(result);
       }
-      return arr
+      return arr;
     }
   },
   methods: {
-    toQueRenOrder(theAllNum,finallyPrice){
-      var that = this
-      var goodsArr=[]
-      var numArr=[]
-      for(let i=0;i<this.indexArray.length;i++){
-        goodsArr.push(this.checkboxItems[this.indexArray[i]].goods_id)
-        numArr.push(this.checkboxItems[this.indexArray[i]].num)
+    toQueRenOrder(theAllNum, finallyPrice) {
+      var that = this;
+      var goodsArr = [];
+      var numArr = [];
+      for (let i = 0; i < this.indexArray.length; i++) {
+        goodsArr.push(this.checkboxItems[this.indexArray[i]].goods_id);
+        numArr.push(this.checkboxItems[this.indexArray[i]].num);
       }
-      var postGoodsArr=goodsArr.toString()
-      var postNumArr=numArr.toString()
-      wx.redirectTo({
-        url: '/pages/queRenDingDan/main?theAllNum='+theAllNum+'&&finallyPrice='+finallyPrice.toFixed(2)+'&&goodsIds='+postGoodsArr+'&&numArr='+postNumArr
+      var postGoodsArr = goodsArr.toString();
+      var postNumArr = numArr.toString();
+      wx.navigateTo({
+        url: "/pages/queRenDingDan/main?theAllNum=" + theAllNum + "&&finallyPrice=" + finallyPrice.toFixed(2) + "&&goodsIds=" + postGoodsArr + "&&numArr=" + postNumArr
       })
     },
     // 滑动开始
-    touchStart(e,index) {
+    touchStart(e, index) {
       // 获取移动距离
-      this.startX = e.mp.changedTouches[0].clientX
-      this.transition = '0.2s'
+      this.startX = e.mp.changedTouches[0].clientX;
+      this.transition = "0.2s";
     },
-    touchMove(e,index) {
-      var theScrollLeft = e.mp.changedTouches[0].clientX - this.startX
-      this.scrollLeft[index] = theScrollLeft + 'rpx'
+    touchMove(e, index) {
+      var theScrollLeft = e.mp.changedTouches[0].clientX - this.startX;
+      this.scrollLeft[index] = theScrollLeft + "rpx";
     },
     touchEnd(e, index) {
       // 获取移动距离
-      this.endX = e.mp.changedTouches[0].clientX
-      if(parseInt(this.scrollLeft[index])<=-10){
-        this.scrollLeft[index] = -130+'rpx'
-      }else if(parseInt(this.scrollLeft[index])>=0){
-        this.scrollLeft[index] = 0
+      this.endX = e.mp.changedTouches[0].clientX;
+      if (parseInt(this.scrollLeft[index]) <= -10) {
+        this.scrollLeft[index] = -130 + "rpx";
+      } else if (parseInt(this.scrollLeft[index]) >= 0) {
+        this.scrollLeft[index] = 0;
       }
     },
-    delet(goodsId,index){
+    delet(goodsId, index) {
       //删除某一条数据
-      var that = this
+      var that = this;
       wx.request({
-        url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/delCartGoods',
-        method:'post',
-        dataType:'json',
+        url:
+          "http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/delCartGoods",
+        method: "post",
+        dataType: "json",
         data: {
           token: that.$store.state.token,
           cid: Number(goodsId)
         },
         success: function(res) {
-          console.log(res.data)
-          
-          that.scrollLeft[index] = '-880rpx'
-          setTimeout(()=>{
-            that.transition = 0
-            that.checkboxItems.splice(index,1)
-            that.scrollLeft = []
-            that.theAllNum = 0
-            that.finallyPrice = 0
+          console.log(res.data);
+
+          that.scrollLeft[index] = "-880rpx";
+          setTimeout(() => {
+            that.transition = 0;
+            that.checkboxItems.splice(index, 1)
+            that.scrollLeft = [];
+            that.theAllNum = 0;
+            that.finallyPrice = 0;
             for (var i = 0; i < that.checkboxItems.length; i++) {
-              if(that.checkboxItems[i].checked){
+              if (that.checkboxItems[i].checked) {
                 that.theAllNum += that.checkboxItems[i].num
                 that.finallyPrice += that.totalPrice[i]
               }
             }
-          },230)
+          }, 230)
         },
-        fail(err){
-          console.log(err)
+        fail(err) {
+          console.log(err);
         }
-      })
+      });
     },
     checkboxChange(e) {
       //多选框切换选中状态
-      this.theAllNum = 0
-      this.finallyPrice = 0
-      this.indexArray = []
-      console.log("checkbox发生change事件，携带value值为：" + e.mp.detail.value)
-      var checkboxItems = this.checkboxItems
-      this.valueArray = e.mp.detail.value
+      this.theAllNum = 0;
+      this.finallyPrice = 0;
+      this.indexArray = [];
+      console.log(
+        "checkbox发生change事件，携带value值为：" + e.mp.detail.value
+      );
+      var checkboxItems = this.checkboxItems;
+      this.valueArray = e.mp.detail.value;
       for (var i = 0; i < checkboxItems.length; ++i) {
-        checkboxItems[i].checked = false
+        checkboxItems[i].checked = false;
 
         for (var j = 0, lenJ = this.valueArray.length; j < lenJ; ++j) {
           if (checkboxItems[i].goods_id == this.valueArray[j]) {
-            checkboxItems[i].checked = true
-            this.indexArray.push(i)
-            this.theAllNum += this.allNum[i]
-            this.finallyPrice += this.totalPrice[i]
-            break
+            checkboxItems[i].checked = true;
+            this.indexArray.push(i);
+            this.theAllNum += this.allNum[i];
+            this.finallyPrice += this.totalPrice[i];
+            break;
           }
         }
       }
-      this.checkboxItems = checkboxItems
+      this.checkboxItems = checkboxItems;
       //当商品的checkBox全选后，全选按钮选中
       if (this.valueArray.length == checkboxItems.length) {
         this.jiesuanCheck.checked = true;
@@ -240,54 +273,54 @@ export default {
     },
     jiesuan(e) {
       //全选按钮结算金额和总数
-      this.theAllNum = 0
-      this.finallyPrice = 0
+      this.theAllNum = 0;
+      this.finallyPrice = 0;
       //切换全选checkBox的选中状态
       this.jiesuanCheck.checked = !this.jiesuanCheck.checked;
-      var checkboxItems = this.checkboxItems
-      this.valueArray = e.mp.detail.value
+      var checkboxItems = this.checkboxItems;
+      this.valueArray = e.mp.detail.value;
       for (let k = 0; k < this.checkboxItems.length; k++) {
-        this.theAllNum += this.checkboxItems[k].num
-        this.finallyPrice += this.totalPrice[k]
+        this.theAllNum += this.checkboxItems[k].num;
+        this.finallyPrice += this.totalPrice[k];
       }
       //全选按钮切换状态时，商品的checkBox进行相应的状态改变
       if (this.jiesuanCheck.checked) {
         for (var i = 0, lenI = checkboxItems.length; i < lenI; ++i) {
-          checkboxItems[i].checked = true
+          checkboxItems[i].checked = true;
         }
       } else {
         for (var i = 0, lenI = checkboxItems.length; i < lenI; ++i) {
-          checkboxItems[i].checked = false
-          this.theAllNum = 0
-          this.finallyPrice = 0
+          checkboxItems[i].checked = false;
+          this.theAllNum = 0;
+          this.finallyPrice = 0;
         }
       }
     },
     increment(index) {
       //加号按钮
-      this.theAllNum = 0
-      this.finallyPrice = 0
-      this.checkboxItems[index].num++
+      this.theAllNum = 0;
+      this.finallyPrice = 0;
+      this.checkboxItems[index].num++;
       for (var i = 0, lenI = this.checkboxItems.length; i < lenI; ++i) {
-        if(this.checkboxItems[i].checked){
-          this.theAllNum += this.checkboxItems[i].num
-          this.finallyPrice += this.totalPrice[i]
+        if (this.checkboxItems[i].checked) {
+          this.theAllNum += this.checkboxItems[i].num;
+          this.finallyPrice += this.totalPrice[i];
         }
       }
     },
     decrement(index) {
       //减号按钮
       if (this.checkboxItems[index].num == 1) {
-        return false
+        return false;
       } else {
         //重置金额，每次重新计算
-        this.theAllNum = 0
-        this.finallyPrice = 0
-        this.checkboxItems[index].num--
+        this.theAllNum = 0;
+        this.finallyPrice = 0;
+        this.checkboxItems[index].num--;
         for (var i = 0, lenI = this.checkboxItems.length; i < lenI; ++i) {
-          if(this.checkboxItems[i].checked){
-            this.theAllNum += this.checkboxItems[i].num
-            this.finallyPrice += this.totalPrice[i]
+          if (this.checkboxItems[i].checked) {
+            this.theAllNum += this.checkboxItems[i].num;
+            this.finallyPrice += this.totalPrice[i];
           }
         }
       }
@@ -310,7 +343,7 @@ export default {
   width: 750rpx;
   border-top: 1px solid #d7d7d7;
 }
-.cart-item{
+.cart-item {
   width: 750rpx;
   overflow: hidden;
   display: flex;
@@ -320,7 +353,7 @@ export default {
   position: relative;
   height: 246rpx;
 }
-.long-box{
+.long-box {
   width: 880rpx;
   position: absolute;
   top: 0;
@@ -331,7 +364,7 @@ export default {
   justify-content: flex-start;
   align-items: center;
 }
-.delet-btn{
+.delet-btn {
   height: 240rpx;
   line-height: 240rpx;
   text-align: center;

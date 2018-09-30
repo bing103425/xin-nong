@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div class="qrdd-top-userinfo-box">
+    <div class="qrdd-top-userinfo-box" @click="toDingDanAdd()">
       <div class="qrdd-userinfo-name flex-space-between">
         <p> 收货人信息：{{userAddInfo.consigner}}</p>
         <p>{{userAddInfo.mobile}}</p>
@@ -8,27 +8,31 @@
       <p>收货地址：{{userAddInfo.province}}-{{userAddInfo.city}}-{{userAddInfo.district}}-{{userAddInfo.address}}</p>
     </div>
     <img src="../../assets/image/bj2@2x.png" class="bg-img-bg">
+    <div v-if="isHasGoods">
+      <mp-confirmOrderCard :goodsInfo="goodsInfo"></mp-confirmOrderCard>
 
-    <mp-confirmOrderCard :goodsInfo="goodsInfo"></mp-confirmOrderCard>
+      <div class="co-input-box flex-space-between">
+          <span class="co-input-title">买家留言</span>
+          <input type="text" placeholder="给卖家留言" v-model="message">
+      </div>
 
-    <div class="co-input-box flex-space-between">
-        <span class="co-input-title">买家留言</span>
-        <input type="text" placeholder="给卖家留言">
+      <div class="co-bottom-box">
+          <p>结算信息</p>
+          <div class="flex-space-between">
+              <p>共 <span class="red-text">{{theAllNum}}</span> 件商品 总计</p>
+              <p>￥{{finallyPrice}}</p>
+          </div>
+          <div class="flex-space-between">
+              <p>运费</p>
+              <p>免运费</p>
+          </div>
+      </div>
+      <div class="qrdd-zhanwei"></div>
+      <div class="co-pay-btn" @click="submitOrder()">微信支付 &nbsp;(￥{{finallyPrice}})</div>
     </div>
-
-    <div class="co-bottom-box">
-        <p>结算信息</p>
-        <div class="flex-space-between">
-            <p>共 <span class="red-text">{{theAllNum}}</span> 件商品 总计</p>
-            <p>￥{{finallyPrice}}</p>
-        </div>
-        <div class="flex-space-between">
-            <p>运费</p>
-            <p>￥0.00</p>
-        </div>
+    <div v-else class="qrdd-no-goods">
+      暂时没有商品哦~
     </div>
-    <div class="qrdd-zhanwei"></div>
-    <div class="co-pay-btn" @click="submitOrder()">微信支付 &nbsp;(￥{{finallyPrice}})</div>
 
   </div>
 </template>
@@ -44,7 +48,10 @@ export default {
       goodsInfo: {}, //组件内商品信息
       theAllNum: "", //结算价格的信息
       finallyPrice: "", //结算价格的信息
-      orderData: "" //提交订单发送的数据
+      orderData: "", //提交订单发送的数据
+      urlCanShu: "", //页面参数
+      message: "", //买家留言
+      isHasGoods: true
     };
   },
 
@@ -53,9 +60,14 @@ export default {
   },
 
   methods: {
+    toDingDanAdd(){
+      wx.navigateTo({
+        url: '/pages/dingDanAdd/main?theAllNum='+this.theAllNum+"&finallyPrice="+this.urlCanShu.finallyPrice+"&goodsIds="+this.urlCanShu.goodsIds+"&numArr="+this.urlCanShu.numArr
+      })
+    },
     submitOrder() {
       var that = this;
-      console.log(that.goodsInfo);
+      console.log('打印cat_ids',that.orderData.slice(0, that.orderData.length - 1))
       wx.request({
         url: "http://xcx_shop.idc.gcsci.net/index.php?s=/wx/order/submitOrder",
         method: "post",
@@ -64,59 +76,45 @@ export default {
           token: that.$store.state.token,
           address_id: 14,
           cat_ids: that.orderData.slice(0, that.orderData.length - 1),
-          message: "留言"
+          message: that.message
         },
         success: function(res) {
 
-
-          wx.getStorage({
-            key: "openid",
+          wx.request({
+            url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/pay/getPayValue',
+            method:'post',
+            dataType:'json',
+            data: {
+              token: that.$store.state.token,
+              out_trade_no: res.data.data.out_trade_no
+            },
             success: function(res) {
-              wx.request({
-                //这里是后台的处理方法，url是自定义的，直接换成你自己的后台处理方法即可，Wx_Pay这个方法在下面写的有
-                //后台用的php做处理，java的可以参考方法，道理都是一样的
-                url: url + "Wx_Pay",
-                data: {
-                  //用户的openid
-                  openid: res.data,
-                  fee: that.data.totalPrice, //支付金额
-                  details: that.data.goodsList[0].goods_name //支付商品的名称
-                },
-                success: function(result) {
-                  if (result.data) {
-                    //out_trade_no=res.data['out_trade_no']
-                    wx.requestPayment({
-                      timeStamp: result.data["timeStamp"],
-                      nonceStr: result.data["nonceStr"],
-                      package: result.data["package"],
-                      signType: "MD5",
-                      paySign: result.data["paySign"],
-                      success: function(successret) {
-                        console.log("支付成功")
-                        //获取支付用户的信息
-                        wx.getStorage({
-                          key: "userInfo",
-                          success: function(getuser) {
-                            //加入订单表做记录
-                            wx.request({
-                              url: url + "Wx_AddOrder",
-                              data: {
-                                uname: getuser.data.nickName,
-                                goods: that.data.goodsList[0].goods_name,
-                                price: that.data.totalPrice,
-                                openid: res.data
-                              },
-                              success: function(lastreturn) {
-                                console.log("存取成功")
-                              }
-                            })
-                          }
-                        })
-                      },
-                      fail: function(res) {}
+              if(res.data.code == 0){
+                //微信支付
+                wx.requestPayment({
+                  timeStamp: res.data.data["timeStamp"],
+                  nonceStr: res.data.data["nonceStr"],
+                  package: res.data.data["package"],
+                  signType: "MD5",
+                  paySign: res.data.data["paySign"],
+                  success: function(successret) {
+                    //支付成功回调
+                    wx.navigateTo({
+                      url: '/pages/quanBuDingDan/main'
+                    })
+                  },
+                  fail: function(res) {
+                    wx.redirectTo({
+                      url: '/pages/quanBuDingDan/main'
                     })
                   }
-                }
+                })
+              }else{
+              }
+            },
+            fail(err){
+              wx.redirectTo({
+                url: '/pages/quanBuDingDan/main'
               })
             }
           })
@@ -145,7 +143,7 @@ export default {
               for (let k = 0; k < add[i].children[j].children.length; k++) {
                 if (district == add[i].children[j].children[k].value) {
                   //区的id
-                  resultDistrict = add[i].children[j].children[k].text;
+                  resultDistrict = add[i].children[j].children[k].text
                 }
               }
             }
@@ -155,18 +153,6 @@ export default {
       var arr = [];
       arr.push(resultProvince, resultCity, resultDistrict);
       return arr;
-    },
-    //微信支付
-    payMoney() {
-      wx.requestPayment({
-        timeStamp: "",
-        nonceStr: "",
-        package: "",
-        signType: "MD5",
-        paySign: "",
-        success: function(res) {},
-        fail: function(res) {}
-      });
     }
   },
 
@@ -174,86 +160,128 @@ export default {
     var that = this;
     var pages = getCurrentPages(); //获取加载的页面
     var currentPage = pages[pages.length - 1]; //获取当前页面的对象
-    var urlCanShu = currentPage.options;
-    var postId = pages[pages.length - 1].options.goodsIds;
-
-    //将商品ID和数量组合成json，配套的将数量放到页面里
-    var goodsIdAndNumArr = []; //json结果
-    urlCanShu.goodsIds = urlCanShu.goodsIds.split(",");
-    urlCanShu.numArr = urlCanShu.numArr.split(",");
-    for (let m = 0; m < urlCanShu.goodsIds.length; m++) {
-      var goodsIdAndNumObj = {};
-      goodsIdAndNumObj.id = urlCanShu.goodsIds[m];
-      goodsIdAndNumObj.num = urlCanShu.numArr[m];
-      goodsIdAndNumArr[m] = goodsIdAndNumObj;
-    }
-
-    that.theAllNum = urlCanShu.theAllNum; //总数量
-    that.finallyPrice = urlCanShu.finallyPrice; //总价格
-    // console.log('urlCanShu',urlCanShu)
-    wx.request({
-      url: "http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/memberAddress",
-      method: "post",
-      dataType: "json",
-      data: {
-        token: that.$store.state.token
-      },
-      success: function(res) {
-        for (let i = 0; i < res.data.data.length; i++) {
-          if (res.data.data[i].is_default == 1) {
-            that.userAddInfo = res.data.data[i];
-          } else {
-            that.userAddInfo = res.data.data[0];
-          }
-        }
-
-        //开始循环，根据地址转换后的数据查询到对应id
-        let addStr = that.idToAddStr(
-          that.userAddInfo.province,
-          that.userAddInfo.city,
-          that.userAddInfo.district
-        );
-        console.log(addStr);
-        //时间戳转换正常日期
-        that.userAddInfo.province = addStr[0];
-        that.userAddInfo.city = addStr[1];
-        that.userAddInfo.district = addStr[2];
-      },
-      fail(err) {
-        console.log(err);
-      }
-    });
-
-    //根据上个页面发过来的商品ID，获取订单内的商品
-    wx.request({
-      url:"http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getGoodsDetailById",
-      method: "post",
-      dataType: "json",
-      data: {
-        gid: postId
-      },
-      success: function(res) {
-        that.goodsInfo = res.data.data;
-        // console.log('goodsIdAndNumArrasdasdas ',res.data.data)
-        for (let i = 0; i < that.goodsInfo.length; i++) {
-          for (let j = 0; j < goodsIdAndNumArr.length; j++) {
-            if (that.goodsInfo[i].goods_id == goodsIdAndNumArr[j].id) {
-              console.log("返回的i", that.goodsInfo[i]);
-              console.log("数据数据", goodsIdAndNumArr);
-              that.orderData +=
-                goodsIdAndNumArr[j].id + ":" + goodsIdAndNumArr[j].num + ",";
-              that.goodsInfo[i].num = goodsIdAndNumArr[j].num;
+    this.urlCanShu = currentPage.options
+    console.log('urlCanShu',this.urlCanShu)
+    if(this.urlCanShu.addId){
+      //获取收货地址
+      wx.request({
+        url: "http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/memberAddress",
+        method: "post",
+        dataType: "json",
+        data: {
+          token: that.$store.state.token
+        },
+        success: function(res) {
+          for (let i = 0; i < res.data.data.length; i++) {
+            if(res.data.data[i].id == that.urlCanShu.addId){
+              that.userAddInfo = res.data.data[i]
             }
           }
+
+          //开始循环，根据地址转换后的数据查询到对应id
+          let addStr = that.idToAddStr(
+            that.userAddInfo.province,
+            that.userAddInfo.city,
+            that.userAddInfo.district
+          )
+          console.log(addStr);
+          //时间戳转换正常日期
+          that.userAddInfo.province = addStr[0]
+          that.userAddInfo.city = addStr[1]
+          that.userAddInfo.district = addStr[2]
+        },
+        fail(err) {
+          console.log(err);
         }
-        console.log("数据数据 ", that.orderData);
-      },
-      fail(err) {
-        console.log(err);
+      })
+    }else{
+      //获取收货地址
+      wx.request({
+        url: "http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/memberAddress",
+        method: "post",
+        dataType: "json",
+        data: {
+          token: that.$store.state.token
+        },
+        success: function(res) {
+          for (let i = 0; i < res.data.data.length; i++) {
+            if (res.data.data[i].is_default == 1) {
+              that.userAddInfo = res.data.data[i]
+            } else {
+              that.userAddInfo = res.data.data[0]
+            }
+          }
+
+          //开始循环，根据地址转换后的数据查询到对应id
+          let addStr = that.idToAddStr(
+            that.userAddInfo.province,
+            that.userAddInfo.city,
+            that.userAddInfo.district
+          )
+          console.log(addStr);
+          //时间戳转换正常日期
+          that.userAddInfo.province = addStr[0]
+          that.userAddInfo.city = addStr[1]
+          that.userAddInfo.district = addStr[2]
+        },
+        fail(err) {
+          console.log(err)
+        }
+      })
+    }
+
+
+    if(this.urlCanShu.goodsIds){
+      var postId = pages[pages.length - 1].options.goodsIds
+
+      console.log('postId',postId)
+      //将商品ID和数量组合成json，配套的将数量放到页面里
+      var goodsIdAndNumArr = [] //json结果
+      this.urlCanShu.goodsIds = this.urlCanShu.goodsIds.split(",")
+      this.urlCanShu.numArr = this.urlCanShu.numArr.split(",")
+      for (let m = 0; m < this.urlCanShu.goodsIds.length; m++) {
+        var goodsIdAndNumObj = {}
+        goodsIdAndNumObj.id = this.urlCanShu.goodsIds[m]
+        goodsIdAndNumObj.num = this.urlCanShu.numArr[m]
+        goodsIdAndNumArr[m] = goodsIdAndNumObj
       }
-    });
+
+      that.theAllNum = this.urlCanShu.theAllNum     //总数量
+      that.finallyPrice = this.urlCanShu.finallyPrice   //总价格
+      // console.log('this.urlCanShu',this.urlCanShu)
+
+      //根据上个页面发过来的商品ID，获取订单内的商品
+      wx.request({
+        url:"http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getGoodsDetailById",
+        method: "post",
+        dataType: "json",
+        data: {
+          gid: postId
+        },
+        success: function(res) {
+          that.isHasGoods = true
+          that.goodsInfo = res.data.data
+          that.orderData = []
+          // console.log('goodsIdAndNumArrasdasdas ',res.data.data)
+          for (let i = 0; i < that.goodsInfo.length; i++) {
+            for (let j = 0; j < goodsIdAndNumArr.length; j++) {
+              if (that.goodsInfo[i].goods_id == goodsIdAndNumArr[j].id) {
+                that.orderData += goodsIdAndNumArr[j].id + ":" + goodsIdAndNumArr[j].num + ","
+                that.goodsInfo[i].num = goodsIdAndNumArr[j].num
+              }
+            }
+          }
+          console.log("数据数据 ", that.orderData)
+        },
+        fail(err) {
+          console.log(err)
+        }
+      })
+    }else{
+      this.isHasGoods = false
+    }
   }
-};
+}
 </script>
 
 <style scoped>
@@ -318,5 +346,15 @@ export default {
 }
 .qrdd-zhanwei {
   height: 110rpx;
+}
+.qrdd-no-goods{
+  padding-top: 60rpx;
+  text-align: center;
+  width: 100%;
+  font-size: 30rpx;
+  color: #666;
+}
+.qrdd-a{
+  width: 100%;
 }
 </style>
