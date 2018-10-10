@@ -66,23 +66,22 @@ export default {
       // 显示加载图标
       wx.showLoading({
         title: '玩命加载中'
-      })    // 页数+1
-      wx.request({
-        url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getHotGoods',
-        method:'post',
-        dataType:'json',
-        data:{
-          token: that.$store.state.token,
-          p: that.page
-        },
-        success: function(res) {
-          wx.hideLoading()
-          that.goodsList = that.goodsList.concat(res.data.data.hot_list)
-          if(res.data.data.list_page == that.page){
-            that.isNextPage = false
+      })
+      // 页数+1
+      that.$http.post({
+          url:"/wx/index/getHotGoods",
+          dataType:'json',
+          data:{
+            p: that.page
           }
-          that.page++
+      })
+      .then(res =>{
+        wx.hideLoading()
+        that.goodsList = that.goodsList.concat(res.data.hot_list)
+        if(res.data.list_page == that.page){
+          that.isNextPage = false
         }
+        that.page++
       })
     }
   },
@@ -103,36 +102,32 @@ export default {
     console.log('二维码获取',decodeURIComponent(options.uid))
     
     //获取Banner图
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getIndexAdv',
-      method:'post',
-      dataType:'json',
-      success: function(res) {
-        that.imgUrls = res.data.data.adv_list
-      }
+    that.$http.post({
+      url:"/wx/index/getIndexAdv",
+      dataType:'json'
     })
-    
+    .then(res =>{
+      that.imgUrls = res.data.adv_list
+    })
     //获取热销商品列表
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getHotGoods',
-      method:'post',
-      dataType:'json',
-      success: function(res) {
-        that.goodsList = res.data.data.hot_list
-        if(res.data.data.list_page == that.page){
-          that.isNextPage = false
-        }
-        that.page++
+    that.$http.post({
+      url:"/wx/index/getHotGoods",
+      dataType:'json'
+    })
+    .then(res =>{
+      that.goodsList = res.data.hot_list
+      if(res.data.list_page == that.page){
+        that.isNextPage = false
       }
+      that.page++
     })
     //获取推荐商品列表
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getRecommendedGoods',
-      method:'post',
-      dataType:'json',
-      success: function(res) {
-        that.indexCardData = res.data.data
-      }
+    that.$http.post({
+      url:"/wx/index/getRecommendedGoods",
+      dataType:'json'
+    })
+    .then(res =>{
+      that.indexCardData = res.data
     })
   }
 }

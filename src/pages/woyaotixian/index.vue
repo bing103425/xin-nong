@@ -23,10 +23,10 @@
         </label>
       </checkbox-group>
     </div>
-    <div class="tx-item flex-flex-start tx-tip">
+    <div class="tx-item flex-flex-start tx-tip" v-if="data.withdraw_cash_min && data.withdraw_multiple">
       <span class="red-text">提示：最低提现金额为{{data.withdraw_cash_min}}元，必须为{{data.withdraw_multiple}}的整数倍</span>
     </div>
-    <div class="tx-item tx-tipa">
+    <div class="tx-item tx-tipa" v-if="data.withdraw_message">
       注：{{data.withdraw_message}}
     </div>
     <div class="tx-tjsq-btn" @click="submit()">提交申请</div>
@@ -44,35 +44,30 @@ export default {
       withdrawMoney:''
     }
   },
-  computed: {
-  },
-
-  components: {
-  },
-
   methods: {
     submit(){
       var that = this
-      if(that.withdrawMoney<that.data.withdraw_cash_min){
-        wx.showToast({
-          title: '最低提现'+that.data.withdraw_cash_min+'元哦',
-          icon: 'none',
-          duration: 2000
-        })
-      }else{
-        if(that.isXiaoShu(that.withdrawMoney)){
-          wx.request({
-            url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/distribution/submitWithDraw',
-            method:'post',
-            dataType:'json',
-            data: {
-              token: that.$store.state.token,
-              withdraw_money: Number(that.withdrawMoney)
-            },
-            success: function(res) {
-              if(res.data.code == 0){
+      //存在最小提现金额时，限制用户
+      if(that.data.withdraw_cash_min && that.data.withdraw_multiple){
+        if(Number(that.withdrawMoney) < Number(that.data.withdraw_cash_min)){
+          wx.showToast({
+            title: '最低提现'+that.data.withdraw_cash_min+'元哦',
+            icon: 'none',
+            duration: 2000
+          })
+        }else{
+          if(that.isXiaoShu(that.withdrawMoney)){
+            that.$http.post({
+              url:"/wx/distribution/submitWithDraw",
+              dataType:'json',
+              data: {
+                withdraw_money: Number(that.withdrawMoney)
+              }
+            })
+            .then(res =>{
+              if(res.code == 0){
                 wx.showToast({
-                  title: res.data.info,
+                  title: res.info,
                   icon: 'none',
                   duration: 2000
                 })
@@ -82,22 +77,53 @@ export default {
                     url: '/pages/fenxiaozhongxin/main'
                   })
                 }, 2000)
-              }else if(res.data.code == 1){
+              }else if(res.code == 1){
                 wx.showToast({
-                  title: res.data.info,
+                  title: res.info,
                   icon: 'none',
                   duration: 2000
                 })
               }
-            }
-          })
-        }else{
-          wx.showToast({
-            title: '只能提现整数哦',
-            icon: 'none',
-            duration: 2000
-          })
+            })
+          }else{
+            wx.showToast({
+              title: '只能提现整数哦',
+              icon: 'none',
+              duration: 2000
+            })
+          }
         }
+      }else{
+        //后台不存在限制金额时，直接提交
+        console.log(2222)
+        that.$http.post({
+          url:"/wx/distribution/submitWithDraw",
+          dataType:'json',
+          data: {
+            withdraw_money: Number(that.withdrawMoney)
+          }
+        })
+        .then(res =>{
+          if(res.code == 0){
+            wx.showToast({
+              title: res.info,
+              icon: 'none',
+              duration: 2000
+            })
+            
+            setTimeout(() => {
+              wx.redirectTo({
+                url: '/pages/fenxiaozhongxin/main'
+              })
+            }, 2000)
+          }else if(res.code == 1){
+            wx.showToast({
+              title: res.info,
+              icon: 'none',
+              duration: 2000
+            })
+          }
+        })
       }
     },
     isXiaoShu(num){
@@ -132,16 +158,12 @@ export default {
 
   mounted(){
     var that = this
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/distribution/goWithdraw',
-      method:'post',
-      dataType:'json',
-      data: {
-        token: that.$store.state.token
-      },
-      success: function(res) {
-        that.data = res.data.data
-      }
+    that.$http.post({
+      url:"/wx/distribution/goWithdraw",
+      dataType:'json'
+    })
+    .then(res =>{
+      that.data = res.data
     })
   }
 }

@@ -13,19 +13,13 @@ export default {
   },
   mounted(){
     var that = this
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/wx/createQrcodeC',
-      method:'post',
-      dataType:'json',
-      data: {
-        token: that.$store.state.token
-      },
-      success: function(res) {
-        that.qrcode = res.data.data.qrcode
-      },
-      fail(err){
-        console.log(err)
-      }
+    that.$http.post({
+        url:"/wx/wx/createQrcodeC",
+        dataType:'json',
+        data:{}
+    })
+    .then(res =>{
+      that.qrcode = res.data.qrcode
     })
   }
 }

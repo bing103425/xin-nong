@@ -60,16 +60,15 @@ export default {
   watch:{
     goodsId(){
       var that = this
-      wx.request({
-        url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getGoodsDetail',
-        method:'post',
-        dataType:'json',
-        data:{
-          gid: that.goodsId.id
-        },
-        success: function(res) {
-          that.goodsInfo = res.data.data
-        }
+      that.$http.post({
+          url:"/wx/index/getGoodsDetail",
+          dataType:'json',
+          data:{
+            gid: that.goodsId.id
+          }
+      })
+      .then(res =>{
+          that.goodsInfo = res.data
       })
     }
   },
@@ -80,58 +79,47 @@ export default {
     getCartNum(){
       var that =this
       //获取购物车内的商品数量
-      wx.request({
-        url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/getCartInfo',
-        method:'post',
-        dataType:'json',
-        data: {
-          token: that.$store.state.token
-        },
-        success: function(res) {
+      that.$http.post({
+          url:"/wx/member/getCartInfo",
+          dataType:'json',
+          data:{}
+      })
+      .then(res =>{
           that.goodsNum = 0
-          for(let i=0;i<res.data.data.length;i++){
-            that.goodsNum += res.data.data[i].num
+          for(let i=0;i<res.data.length;i++){
+            that.goodsNum += res.data[i].num
           }
-          
-        },
-        fail(err){
-          console.log(err)
-        }
       })
     },
     submitGoods(){
       var that = this
       if(this.type == 'cart'){
-        wx.request({
-          url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/addCart',
-          method:'post',
-          dataType:'json',
-          data:{
-            token: that.$store.state.token,
-            goods_id: that.goodsInfo.goods_id,
-            num: that.num
-          },
-          success: function(res) {
-            if(res.statusCode == 200 && res.data.code == 0){
-              wx.showToast({
-                title: '添加至购物车',
-                icon: 'success',
-                duration: 2000
-              })
-              setTimeout(() => {
-                that.closeModal()
-                that.getCartNum()
-              }, 2000);
-              console.log('发送成功',res)
+        that.$http.post({
+            url:"/wx/member/addCart",
+            dataType:'json',
+            data:{
+              goods_id: that.goodsInfo.goods_id,
+              num: that.num
             }
+        })
+        .then(res =>{
+          if(res.info == 'success' && res.code == 0){
+            wx.showToast({
+              title: '添加至购物车',
+              icon: 'success',
+              duration: 2000
+            })
+            setTimeout(() => {
+              that.closeModal()
+              that.getCartNum()
+            }, 2000)
           }
         })
       }else if(this.type == 'buyNow'){
         var theAllNum = this.num
-        var finallyPrice = this.finallyPrice
         
         wx.navigateTo({
-          url: '/pages/queRenDingDan/main?theAllNum='+theAllNum+'&&finallyPrice='+finallyPrice+'&&goodsIds='+(that.goodsInfo.goods_id).toString()+'&&numArr='+theAllNum
+          url: '/pages/queRenDingDan/main?theAllNum='+theAllNum+'&&goodsIds='+(that.goodsInfo.goods_id).toString()+'&&numArr='+theAllNum
         })
       }
     },

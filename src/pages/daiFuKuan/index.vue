@@ -28,31 +28,27 @@ export default {
   },
 
   mounted(){
-    
     var that = this
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/order/myOrderList',
-      method:'post',
-      dataType:'json',
-      data:{
-        token: that.$store.state.token
-      },
-      success: function(res) {
-        res.data.data.forEach(item => {
-          item.create_time = timestampToTime(item.create_time*1000,'sec')
-          if(item.status_name == '已收货'){
-            item.status_name = '待评论'
-          }else if(item.status_name == '已发货'){
-            item.status_name = '待收货'
-          }
-          item.order_goods.forEach(innerItem => {
-            innerItem.pic.pic_cover_small ='http://xcx_cx_cx_shop.idc.gcsci.net/'+ innerItem.pic.pic_cover_small
-          })
-        })
 
-        that.fenxiangData = res.data.data
-        console.log(that.fenxiangData)
-      }
+    that.$http.post({
+      url:"/wx/order/myOrderList",
+      dataType: "json",
+      data:{}
+    })
+    .then(res =>{
+      res.data.forEach(item => {
+        item.create_time = timestampToTime(item.create_time*1000,'sec')
+        if(item.status_name == '已收货'){
+          item.status_name = '待评论'
+        }else if(item.status_name == '已发货'){
+          item.status_name = '待收货'
+        }
+        item.order_goods.forEach(innerItem => {
+          innerItem.pic.pic_cover_small ='http://xcx_cx_cx_shop.idc.gcsci.net/'+ innerItem.pic.pic_cover_small
+        })
+      })
+
+      that.fenxiangData = res.data
     })
   },
 

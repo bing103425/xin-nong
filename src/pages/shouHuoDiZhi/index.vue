@@ -39,25 +39,20 @@ export default {
         success:function(res){
           if(res.confirm){
             //用户点击确认删除后
-            wx.request({
-              url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/delMemberAddress',
-              method:'post',
+            that.$http.post({
+              url:"/wx/member/delMemberAddress",
               dataType:'json',
               data: {
-                token: that.$store.state.token,
                 aid: id
-              },
-              success: function(res) {
-                that.addList.splice(index,1)
-                wx.showToast({
-                  title: '删除成功',
-                  icon: 'success',
-                  duration: 2000
-                })
-              },
-              fail(err){
-                console.log(err)
               }
+            })
+            .then(res =>{
+              that.addList.splice(index,1)
+              wx.showToast({
+                title: '删除成功',
+                icon: 'success',
+                duration: 2000
+              })
             })
           }
         }
@@ -95,29 +90,21 @@ export default {
   },
   mounted(){
     var that = this
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/memberAddress',
-      method:'post',
-      dataType:'json',
-      data: {
-        token: that.$store.state.token
-      },
-      success: function(res) {
-        that.addList = res.data.data
-        
-        //开始循环，根据地址转换后的数据查询到对应id
-        that.addList.forEach(item => {
-          let addStr = that.idToAddStr(item.province,item.city,item.district)
-          //时间戳转换正常日期
-          item.province = addStr[0]
-          item.city = addStr[1]
-          item.district = addStr[2]
-        })
-        
-      },
-      fail(err){
-        console.log(err)
-      }
+    that.$http.post({
+      url:"/wx/member/memberAddress",
+      dataType:'json'
+    })
+    .then(res =>{
+      that.addList = res.data
+      
+      //开始循环，根据地址转换后的数据查询到对应id
+      that.addList.forEach(item => {
+        let addStr = that.idToAddStr(item.province,item.city,item.district)
+        //时间戳转换正常日期
+        item.province = addStr[0]
+        item.city = addStr[1]
+        item.district = addStr[2]
+      })
     })
   }
 }

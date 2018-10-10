@@ -4,7 +4,7 @@
       <li v-for="(item,index) in tabData" :key="index" :class="{ 'active' : active == index}" @click="changeTabIndex(index)">{{item}}</li>
     </ul>
     <ul class="content-box">
-      <mp-dingDanCard :fenxiangData="fenxiangData" :orderType="orderType"></mp-dingDanCard>
+      <mp-dingDanCard :fenxiangData="fenxiangData" :orderType="orderType" v-on:isGoBack="isGoBack"></mp-dingDanCard>
     </ul>
   </div>
 </template>
@@ -19,52 +19,62 @@ export default {
       active:0,
       tabData:['全部','待付款','待发货','待收货','待评论'],
       fenxiangData:[],
-      orderType:'全部'
+      orderType:'全部',
+      isBack: true   //用来判断是本页面刷新还是需要返回至个人中心
     }
   },
 
   components: {
     'mp-dingDanCard':dingDanCard
   },
+  onUnload: function () {
+    if(this.isBack){
+      wx.reLaunch({
+        url: '/pages/mine/main'
+      })
+    }
+  },
 
   mounted(){
     var that = this
+    that.isBack = true   //用来判断是本页面刷新还是需要返回至个人中心
     //这个请求没用！！
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=wx/task/load_task',
-      method:'post',
-      dataType:'json',
-      success: function(res) {
-        
+    that.$http.post({
+      url:"/wx/task/load_task",
+      dataType:'json'
+    })
+    .then(res =>{
+      
         //这个请求才有用，获取订单列表
-        wx.request({
-          url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/order/myOrderList',
-          method:'post',
-          dataType:'json',
-          data:{
-            token: that.$store.state.token
-          },
-          success: function(res) {
-            res.data.data.forEach(item => {
-              item.create_time = timestampToTime(item.create_time*1000,'sec')
-              if(item.status_name == '已收货'){
-                item.status_name = '待评论'
-              }else if(item.status_name == '已发货'){
-                item.status_name = '待收货'
-              }
-              item.order_goods.forEach(innerItem => {
-                innerItem.pic.pic_cover_small ='http://xcx_cx_cx_shop.idc.gcsci.net/'+ innerItem.pic.pic_cover_small
-              })
-            })
-
-            that.fenxiangData = res.data.data
+      that.$http.post({
+        url:"/wx/order/myOrderList",
+        dataType:'json',
+      })
+      .then(res =>{
+        res.data.forEach(item => {
+          item.create_time = timestampToTime(item.create_time*1000,'sec')
+          if(item.status_name == '已收货'){
+            item.status_name = '待评论'
+          }else if(item.status_name == '已发货'){
+            item.status_name = '待收货'
           }
+          item.order_goods.forEach(innerItem => {
+            innerItem.pic.pic_cover_small ='http://xcx_cx_cx_shop.idc.gcsci.net/'+ innerItem.pic.pic_cover_small
+          })
         })
-      }
+
+        that.fenxiangData = res.data
+      })
     })
   },
 
   methods: {
+    isGoBack(val){
+      console.log(val)
+      if(!val){
+        this.isBack = false
+      }
+    },
     changeTabIndex(index){
       this.active = index
       switch(index)

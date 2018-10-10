@@ -3,12 +3,15 @@ import App from './App'
 import './assets/css/global.css'    //全局css样式
 import './assets/css/weui.css'    //组件库css样式
 import store from './vuex/store'  //Vuex
+import request from './utils/request'
+
 
 Vue.config.productionTip = false
 App.mpType = 'app'
 
 const app = new Vue(App)
 Vue.prototype.$store = store
+Vue.prototype.$http = request
 app.$mount()
 export default {
     // 这个字段走 app.json

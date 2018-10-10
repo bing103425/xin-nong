@@ -29,19 +29,17 @@ export default {
     var pages = getCurrentPages() //获取加载的页面
     var currentPage = pages[pages.length-1] //获取当前页面的对象
     var orderGoodsId = currentPage.options.orderGoodsId
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/order/getExpressInfo',
-      method:'post',
-      dataType:'json',
-      data: {
-        token: that.$store.state.token,
-        order_goods_id: orderGoodsId
-      },
-      success: function(res) {
-        that.data = res.data.data
-        //将数组逆序
-        that.data.retval.reverse()
-      }
+    that.$http.post({
+        url:"/wx/order/getExpressInfo",
+        dataType:'json',
+        data:{
+          order_goods_id: orderGoodsId
+        }
+    })
+    .then(res =>{
+      that.data = res.data
+      //将数组逆序
+      that.data.retval.reverse()
     })
   }
 }

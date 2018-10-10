@@ -91,55 +91,37 @@ export default {
   },
   onShow: function() {
     var that = this
-    this.valueArray = this.scrollLeft = this.checkboxItems = this.jieSuanGoods = this.indexArray = []
+    this.valueArray = this.scrollLeft = this.jieSuanGoods = this.indexArray = []
     this.jiesuanCheck = {
       checked: false
     }
     this.finallyPrice = this.theAllNum = 0
-    wx.request({
-      url: "http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/getCartInfo",
-      method: "post",
-      dataType: "json",
-      data: {
-        token: that.$store.state.token
-      },
-      success: function(res) {
-        console.log(res.data);
-        res.data.data.forEach(item => {
-          item.checked = false;
-          item.goods_id = item.goods_id.toString();
-          item.price = Number(item.price);
-        });
-        that.checkboxItems = res.data.data;
-        console.log(that.checkboxItems);
-      },
-      fail(err) {
-        console.log(err);
-      }
+    that.$http.post({
+      url:"/wx/member/getCartInfo",
+      data:{}
+    })
+    .then(res =>{
+      res.data.forEach(item => {
+        item.checked = false
+        item.goods_id = item.goods_id.toString()
+        item.price = Number(item.price)
+      })
+      that.checkboxItems = res.data
     })
   },
   mounted() {
     var that = this
-    wx.request({
-      url: "http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/getCartInfo",
-      method: "post",
-      dataType: "json",
-      data: {
-        token: that.$store.state.token
-      },
-      success: function(res) {
-        console.log(res.data);
-        res.data.data.forEach(item => {
-          item.checked = false;
-          item.goods_id = item.goods_id.toString();
-          item.price = Number(item.price);
-        });
-        that.checkboxItems = res.data.data;
-        console.log(that.checkboxItems);
-      },
-      fail(err) {
-        console.log(err);
-      }
+    that.$http.post({
+      url:"/wx/member/getCartInfo",
+      data:{}
+    })
+    .then(res =>{
+      res.data.forEach(item => {
+        item.checked = false
+        item.goods_id = item.goods_id.toString()
+        item.price = Number(item.price)
+      })
+      that.checkboxItems = res.data
     })
   },
   computed: {
@@ -207,38 +189,31 @@ export default {
     },
     delet(goodsId, index) {
       //删除某一条数据
-      var that = this;
-      wx.request({
-        url:
-          "http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/delCartGoods",
-        method: "post",
+      var that = this
+      
+      that.$http.post({
+        url:"/wx/member/delCartGoods",
         dataType: "json",
-        data: {
-          token: that.$store.state.token,
+        data:{
           cid: Number(goodsId)
-        },
-        success: function(res) {
-          console.log(res.data);
-
-          that.scrollLeft[index] = "-880rpx";
-          setTimeout(() => {
-            that.transition = 0;
-            that.checkboxItems.splice(index, 1)
-            that.scrollLeft = [];
-            that.theAllNum = 0;
-            that.finallyPrice = 0;
-            for (var i = 0; i < that.checkboxItems.length; i++) {
-              if (that.checkboxItems[i].checked) {
-                that.theAllNum += that.checkboxItems[i].num
-                that.finallyPrice += that.totalPrice[i]
-              }
-            }
-          }, 230)
-        },
-        fail(err) {
-          console.log(err);
         }
-      });
+      })
+      .then(res =>{
+        that.scrollLeft[index] = "-880rpx"
+        setTimeout(() => {
+          that.transition = 0
+          that.checkboxItems.splice(index, 1)
+          that.scrollLeft = []
+          that.theAllNum = 0
+          that.finallyPrice = 0
+          for (var i = 0; i < that.checkboxItems.length; i++) {
+            if (that.checkboxItems[i].checked) {
+              that.theAllNum += that.checkboxItems[i].num
+              that.finallyPrice += that.totalPrice[i]
+            }
+          }
+        }, 230)
+      })
     },
     checkboxChange(e) {
       //多选框切换选中状态
@@ -286,21 +261,34 @@ export default {
       //全选按钮切换状态时，商品的checkBox进行相应的状态改变
       if (this.jiesuanCheck.checked) {
         for (var i = 0, lenI = checkboxItems.length; i < lenI; ++i) {
-          checkboxItems[i].checked = true;
+          checkboxItems[i].checked = true
         }
       } else {
         for (var i = 0, lenI = checkboxItems.length; i < lenI; ++i) {
-          checkboxItems[i].checked = false;
-          this.theAllNum = 0;
-          this.finallyPrice = 0;
+          checkboxItems[i].checked = false
+          this.theAllNum = 0
+          this.finallyPrice = 0
         }
       }
     },
     increment(index) {
       //加号按钮
-      this.theAllNum = 0;
-      this.finallyPrice = 0;
-      this.checkboxItems[index].num++;
+      this.theAllNum = 0
+      this.finallyPrice = 0
+      var that = this
+      that.$http.post({
+        url:"/wx/member/addCart",
+        dataType: "json",
+        data:{
+          goods_id: that.checkboxItems[index].goods_id,
+          num: 1
+        }
+      })
+      .then(res =>{
+        if(res.info == 'success' && res.code == 0){
+          that.checkboxItems[index].num++
+        }
+      })
       for (var i = 0, lenI = this.checkboxItems.length; i < lenI; ++i) {
         if (this.checkboxItems[i].checked) {
           this.theAllNum += this.checkboxItems[i].num;
@@ -311,16 +299,29 @@ export default {
     decrement(index) {
       //减号按钮
       if (this.checkboxItems[index].num == 1) {
-        return false;
+        return false
       } else {
         //重置金额，每次重新计算
-        this.theAllNum = 0;
-        this.finallyPrice = 0;
-        this.checkboxItems[index].num--;
+        this.theAllNum = 0
+        this.finallyPrice = 0
+        var that = this
+        that.$http.post({
+          url:"/wx/member/addCart",
+          dataType: "json",
+          data:{
+            goods_id: that.checkboxItems[index].goods_id,
+            num: -1
+          }
+        })
+        .then(res =>{
+          if(res.info == 'success' && res.code == 0){
+            that.checkboxItems[index].num--
+          }
+        })
         for (var i = 0, lenI = this.checkboxItems.length; i < lenI; ++i) {
           if (this.checkboxItems[i].checked) {
-            this.theAllNum += this.checkboxItems[i].num;
-            this.finallyPrice += this.totalPrice[i];
+            this.theAllNum += this.checkboxItems[i].num
+            this.finallyPrice += this.totalPrice[i]
           }
         }
       }

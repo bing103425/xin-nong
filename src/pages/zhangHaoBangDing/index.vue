@@ -28,27 +28,19 @@ export default {
   },
   mounted(){
     var that = this
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/getBindMobile',
-      method:'post',
-      dataType:'json',
-      data: {
-        token: that.$store.state.token
-      },
-      success: function(res) {
-        if(res.data.data.mobile.length == 0){
-          that.noMobileNum = true
-          that.hasMobileNum = false
-        }else{
-          that.hasMobileNum = true
-          that.noMobileNum = false
-          that.mobile = res.data.data.mobile
-          that.text = '更换手机号码'
-        }
-        console.log('res',res.data)
-      },
-      fail(err){
-        console.log(err)
+    that.$http.post({
+      url:"/wx/member/getBindMobile",
+      dataType:'json'
+    })
+    .then(res =>{
+      if(res.data.mobile.length == 0){
+        that.noMobileNum = true
+        that.hasMobileNum = false
+      }else{
+        that.hasMobileNum = true
+        that.noMobileNum = false
+        that.mobile = res.data.mobile
+        that.text = '更换手机号码'
       }
     })
   }

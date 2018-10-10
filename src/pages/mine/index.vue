@@ -113,12 +113,9 @@ export default {
   mounted(){
     //这个接口我也不知道请求了干嘛，后端让的。  （一个耿直的微笑）
     //好像是后端要处理订单状态？？？
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=wx/task/load_task',
-      method:'post',
-      dataType:'json',
-      success: function(res) {
-      }
+    this.$http.post({
+      url:"/wx/task/load_task",
+      dataType:'json'
     })
   },
   components: {

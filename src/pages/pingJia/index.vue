@@ -296,24 +296,22 @@ export default {
     this.order_id = currentPage.options.orderId
     that.pingLunData = []
     
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/order/orderDetail',
-      method:'post',
-      data:{
-        token: that.$store.state.token,
-        order_id: that.order_id
-      },
+    that.$http.post({
+      url:"/wx/order/orderDetail",
       dataType:'json',
-      success: function(res) {
-        let alldata = res.data.data.order_goods
-        alldata.forEach(element => {
-          if(element.refund_status<=0){
-            that.pingLunData.push(element)
-          }
-        })
-        
-        that.postData.splice(that.pingLunData.length,that.postData.length-that.pingLunData.length)
+      data:{
+        order_id: that.order_id
       }
+    })
+    .then(res =>{
+      let alldata = res.data.order_goods
+      alldata.forEach(element => {
+        if(element.refund_status<=0){
+          that.pingLunData.push(element)
+        }
+      })
+      
+      that.postData.splice(that.pingLunData.length,that.postData.length-that.pingLunData.length)
     })
   },
   methods: {
@@ -398,28 +396,26 @@ export default {
         pinLunDetail.push(obj)
       }
       
-      wx.request({
-        url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/order/submitOrderComment',
-        method:'post', 
+      that.$http.post({
+        url:"/wx/order/submitOrderComment",
+        dataType:'json',
         data:{
-          token: that.$store.state.token,
           order_id: that.order_id,
           goodsEvaluate: JSON.stringify(pinLunDetail)
-        },
-        dataType:'json',
-        success: function(res) {
-          if(res.data.code == 0){
-            wx.showToast({
-              title: '评价成功',
-              icon: 'success',
-              duration: 2000
+        }
+      })
+      .then(res =>{
+        if(res.code == 0){
+          wx.showToast({
+            title: '评价成功',
+            icon: 'success',
+            duration: 2000
+          })
+          setTimeout(() => {
+            wx.redirectTo({
+              url: '/pages/quanBuDingDan/main'
             })
-            setTimeout(() => {
-              wx.redirectTo({
-                url: '/pages/quanBuDingDan/main'
-              })
-            }, 2000)
-          }
+          }, 2000)
         }
       })
       

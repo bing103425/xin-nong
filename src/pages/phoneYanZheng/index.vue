@@ -21,20 +21,24 @@ export default {
   methods: {
     submitMobileNum(){
       var that = this
-      wx.request({
-        url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/bindMobile',
-        method:'post',
-        dataType:'json',
-        data: {
-          token: that.$store.state.token,
-          mobile: that.mobile
-        },
-        success: function(res) {
-          console.log('res',res.data)
-        },
-        fail(err){
-          console.log(err)
-        }
+      that.$http.post({
+          url:"/wx/member/bindMobile",
+          dataType:'json',
+          data:{
+            mobile: that.mobile
+          }
+      })
+      .then(res =>{
+        wx.showToast({
+          title: res.info,
+          icon: 'success',
+          duration: 2000
+        })
+        setTimeout(()=>{
+          wx.reLaunch({
+            url: '/pages/mine/main'
+          })
+        },2000)
       })
     }
   },

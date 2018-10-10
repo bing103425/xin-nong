@@ -36,12 +36,8 @@ export default {
           wx.getUserInfo({
             success: (res) => {
               this.userInfo = res.userInfo
-              console.log(res)
             }
           })
-        },
-        fail(err){
-          console.log(err)
         }
       })
     },
@@ -50,42 +46,31 @@ export default {
       wx.login({
         success: function(data) {
           var code = data.code
-          console.log(code)
           wx.getUserInfo({
             success: (res) => {
               that.userInfo = res.userInfo
-              console.log(res)
               that.$store.dispatch("updateUserInfo",res.userInfo)   //将返回的个人信息存贮到vuex
               var rawData = res.rawData
               var signature = res.signature
               var encryptedData = res.encryptedData
               var iv = res.iv
               //发起网络请求
-              wx.request({
-                url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/Login/wxLogin',
-                method:'post',
-                dataType:'json',
-                data: {
-                  code: data.code,
-                  rawData: rawData,
-                  signature: signature,
-                  encryptedData: encryptedData,
-                  iv: iv,
-                  uid: 2
-                },
-                success: function(res) {
-                  that.$store.dispatch("updateOpenIdAndToken",res.data.data.info)   //将返回的token信息存贮到vuex
+              that.$http.post({
+                  url:"/wx/Login/wxLogin",
+                  data:{
+                    code: data.code,
+                    rawData: rawData,
+                    signature: signature,
+                    encryptedData: encryptedData,
+                    iv: iv,
+                    uid: 1
+                  }
+              }).then(res =>{
+                  that.$store.dispatch("updateOpenIdAndToken",res.data.info)   //将返回的token信息存贮到vuex
                   wx.switchTab({
                     url: '/pages/index/main'
                   })
-                },
-                fail(err){
-                  console.log(err)
-                }
               })
-            },
-            fail(err){
-              console.log(err)
             }
           })
         }

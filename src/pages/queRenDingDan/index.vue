@@ -62,69 +62,65 @@ export default {
   methods: {
     toDingDanAdd(){
       wx.navigateTo({
-        url: '/pages/dingDanAdd/main?theAllNum='+this.theAllNum+"&finallyPrice="+this.urlCanShu.finallyPrice+"&goodsIds="+this.urlCanShu.goodsIds+"&numArr="+this.urlCanShu.numArr
+        url: '/pages/dingDanAdd/main?theAllNum='+this.theAllNum+"&goodsIds="+this.urlCanShu.goodsIds+"&numArr="+this.urlCanShu.numArr
       })
     },
     submitOrder() {
-      var that = this;
-      console.log('打印cat_ids',that.orderData.slice(0, that.orderData.length - 1))
-      wx.request({
-        url: "http://xcx_shop.idc.gcsci.net/index.php?s=/wx/order/submitOrder",
-        method: "post",
-        dataType: "json",
-        data: {
-          token: that.$store.state.token,
-          address_id: 14,
-          cat_ids: that.orderData.slice(0, that.orderData.length - 1),
-          message: that.message
-        },
-        success: function(res) {
+      var that = this
+      console.log('打印cat_ids',that.addId)
+      if(!that.userAddInfo.district){
+        wx.showToast({
+          title: '请选择地址',
+          icon: 'none',
+          duration: 2000
+        })
+      }else{
 
-          wx.request({
-            url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/pay/getPayValue',
-            method:'post',
+        that.$http.post({
+          url:"/wx/order/submitOrder",
+          dataType:'json',
+          data: {
+            address_id: that.addId,
+            cat_ids: that.orderData.slice(0, that.orderData.length - 1),
+            message: that.message
+          },
+        })
+        .then(res =>{
+          that.$http.post({
+            url:"/wx/pay/getPayValue",
             dataType:'json',
             data: {
-              token: that.$store.state.token,
-              out_trade_no: res.data.data.out_trade_no
+              out_trade_no: res.data.out_trade_no
             },
-            success: function(res) {
-              if(res.data.code == 0){
-                //微信支付
-                wx.requestPayment({
-                  timeStamp: res.data.data["timeStamp"],
-                  nonceStr: res.data.data["nonceStr"],
-                  package: res.data.data["package"],
-                  signType: "MD5",
-                  paySign: res.data.data["paySign"],
-                  success: function(successret) {
-                    //支付成功回调
-                    wx.navigateTo({
-                      url: '/pages/quanBuDingDan/main'
-                    })
-                  },
-                  fail: function(res) {
-                    wx.redirectTo({
-                      url: '/pages/quanBuDingDan/main'
-                    })
-                  }
-                })
-              }else{
-              }
-            },
-            fail(err){
-              wx.redirectTo({
-                url: '/pages/quanBuDingDan/main'
+          })
+          .then(res =>{
+            
+            if(res.code == 0){
+              //微信支付
+              wx.requestPayment({
+                timeStamp: res.data["timeStamp"],
+                nonceStr: res.data["nonceStr"],
+                package: res.data["package"],
+                signType: "MD5",
+                paySign: res.data["paySign"],
+                success: function(successret) {
+                  //支付成功回调
+                  wx.navigateTo({
+                    url: '/pages/quanBuDingDan/main'
+                  })
+                },
+                fail: function(res) {
+                  wx.redirectTo({
+                    url: '/pages/quanBuDingDan/main'
+                  })
+                }
               })
             }
           })
+          
+        })
 
-        
-        },
-        fail(err) {
-          console.log(err)
-        }
-      })
+      }
     },
     idToAddStr(province, city, district) {
       var resultProvince
@@ -161,72 +157,61 @@ export default {
     var pages = getCurrentPages(); //获取加载的页面
     var currentPage = pages[pages.length - 1]; //获取当前页面的对象
     this.urlCanShu = currentPage.options
-    console.log('urlCanShu',this.urlCanShu)
     if(this.urlCanShu.addId){
+      this.addId = this.urlCanShu.addId
+      console.log('地址',this.urlCanShu.addId)
       //获取收货地址
-      wx.request({
-        url: "http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/memberAddress",
-        method: "post",
-        dataType: "json",
-        data: {
-          token: that.$store.state.token
-        },
-        success: function(res) {
-          for (let i = 0; i < res.data.data.length; i++) {
-            if(res.data.data[i].id == that.urlCanShu.addId){
-              that.userAddInfo = res.data.data[i]
-            }
+      that.$http.post({
+        url:"/wx/member/memberAddress",
+        dataType:'json',
+      })
+      .then(res =>{
+        for (let i = 0; i < res.data.length; i++) {
+          if(res.data[i].id == that.urlCanShu.addId){
+            that.userAddInfo = res.data[i]
           }
-
-          //开始循环，根据地址转换后的数据查询到对应id
-          let addStr = that.idToAddStr(
-            that.userAddInfo.province,
-            that.userAddInfo.city,
-            that.userAddInfo.district
-          )
-          console.log(addStr);
-          //时间戳转换正常日期
-          that.userAddInfo.province = addStr[0]
-          that.userAddInfo.city = addStr[1]
-          that.userAddInfo.district = addStr[2]
-        },
-        fail(err) {
-          console.log(err);
         }
+
+        //开始循环，根据地址转换后的数据查询到对应id
+        let addStr = that.idToAddStr(
+          that.userAddInfo.province,
+          that.userAddInfo.city,
+          that.userAddInfo.district
+        )
+        console.log(addStr);
+        //时间戳转换正常日期
+        that.userAddInfo.province = addStr[0]
+        that.userAddInfo.city = addStr[1]
+        that.userAddInfo.district = addStr[2]
       })
     }else{
       //获取收货地址
-      wx.request({
-        url: "http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/memberAddress",
-        method: "post",
-        dataType: "json",
-        data: {
-          token: that.$store.state.token
-        },
-        success: function(res) {
-          for (let i = 0; i < res.data.data.length; i++) {
-            if (res.data.data[i].is_default == 1) {
-              that.userAddInfo = res.data.data[i]
-            } else {
-              that.userAddInfo = res.data.data[0]
-            }
+      that.$http.post({
+        url:"/wx/member/memberAddress",
+        dataType:'json',
+      })
+      .then(res =>{
+        for (let i = 0; i < res.data.length; i++) {
+          if (res.data[i].is_default == 1) {
+            that.userAddInfo = res.data[i]
+            that.addId = res.data[i].id
+          } else {
+            that.userAddInfo = res.data[0]
+            that.addId = res.data[0].id
           }
-
-          //开始循环，根据地址转换后的数据查询到对应id
-          let addStr = that.idToAddStr(
-            that.userAddInfo.province,
-            that.userAddInfo.city,
-            that.userAddInfo.district
-          )
-          console.log(addStr);
-          //时间戳转换正常日期
-          that.userAddInfo.province = addStr[0]
-          that.userAddInfo.city = addStr[1]
-          that.userAddInfo.district = addStr[2]
-        },
-        fail(err) {
-          console.log(err)
         }
+
+        //开始循环，根据地址转换后的数据查询到对应id
+        let addStr = that.idToAddStr(
+          that.userAddInfo.province,
+          that.userAddInfo.city,
+          that.userAddInfo.district
+        )
+        console.log(addStr);
+        //时间戳转换正常日期
+        that.userAddInfo.province = addStr[0]
+        that.userAddInfo.city = addStr[1]
+        that.userAddInfo.district = addStr[2]
       })
     }
 
@@ -245,37 +230,35 @@ export default {
         goodsIdAndNumObj.num = this.urlCanShu.numArr[m]
         goodsIdAndNumArr[m] = goodsIdAndNumObj
       }
+        console.log('lalalalal',goodsIdAndNumObj)
 
       that.theAllNum = this.urlCanShu.theAllNum     //总数量
-      that.finallyPrice = this.urlCanShu.finallyPrice   //总价格
-      // console.log('this.urlCanShu',this.urlCanShu)
 
       //根据上个页面发过来的商品ID，获取订单内的商品
-      wx.request({
-        url:"http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getGoodsDetailById",
-        method: "post",
-        dataType: "json",
+      that.$http.post({
+        url:"/wx/index/getGoodsDetailById",
+        dataType:'json',
         data: {
           gid: postId
         },
-        success: function(res) {
-          that.isHasGoods = true
-          that.goodsInfo = res.data.data
-          that.orderData = []
-          // console.log('goodsIdAndNumArrasdasdas ',res.data.data)
-          for (let i = 0; i < that.goodsInfo.length; i++) {
-            for (let j = 0; j < goodsIdAndNumArr.length; j++) {
-              if (that.goodsInfo[i].goods_id == goodsIdAndNumArr[j].id) {
-                that.orderData += goodsIdAndNumArr[j].id + ":" + goodsIdAndNumArr[j].num + ","
-                that.goodsInfo[i].num = goodsIdAndNumArr[j].num
-              }
+      })
+      .then(res =>{
+        that.isHasGoods = true
+        that.goodsInfo = res.data
+        that.orderData = []
+        let priceNumber = 0
+        for (let i = 0; i < that.goodsInfo.length; i++) {
+          for (let j = 0; j < goodsIdAndNumArr.length; j++) {
+            if (that.goodsInfo[i].goods_id == goodsIdAndNumArr[j].id) {
+              that.orderData += goodsIdAndNumArr[j].id + ":" + goodsIdAndNumArr[j].num + ","
+              that.goodsInfo[i].num = goodsIdAndNumArr[j].num
+              priceNumber += Number((Number(that.goodsInfo[i].price) * goodsIdAndNumArr[j].num).toFixed(2))
             }
           }
-          console.log("数据数据 ", that.orderData)
-        },
-        fail(err) {
-          console.log(err)
         }
+        
+        //总价格
+        that.finallyPrice = priceNumber.toFixed(2)
       })
     }else{
       this.isHasGoods = false

@@ -90,30 +90,27 @@ export default {
     var currentPage = pages[pages.length-1] //获取当前页面的对象
     var urlCanShu = currentPage.options
     that.num = urlCanShu.num
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/order/getRefundOrderGoodsDetail',
-      method:'post',
+    that.$http.post({
+      url:"/wx/order/getRefundOrderGoodsDetail",
       dataType:'json',
-      data:{
-        token: that.$store.state.token,
+      data: {
         ogid: urlCanShu.orderGoodsId
-      },
-      success: function(res) {
-        that.orderInfo = res.data.data
-        that.orderInfo.refund_time = timestampToTime(that.orderInfo.refund_time)
-        that.files = that.orderInfo.refund_img.split(',')
       }
     })
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getGoodsDetail',
-      method:'post',
+    .then(res =>{
+        that.orderInfo = res.data
+        that.orderInfo.refund_time = timestampToTime(that.orderInfo.refund_time)
+        that.files = that.orderInfo.refund_img.split(',')
+    })
+    that.$http.post({
+      url:"/wx/index/getGoodsDetail",
       dataType:'json',
-      data:{
+      data: {
         gid: urlCanShu.goodsId
-      },
-      success: function(res) {
-        that.goodsInfo = res.data.data
       }
+    })
+    .then(res =>{
+        that.goodsInfo = res.data
     })
   }
 }

@@ -114,39 +114,34 @@ export default {
         //判断选择的地址是否支持
         if(this.isAllowRequest){
           var that = this
-          wx.request({
-            url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/upAddress',
-            method:'post',
-            dataType:'json',
-            data: {
-              mad_id:that.mad_id,
-              token: that.$store.state.token,
-              type: this.isAddOrUpdate,
-              name: that.name,
-              mobile: that.mobile,
-              province: that.province,
-              city: that.city,
-              district: that.district,
-              address: that.address,
-              alias: that.dzActive+1,
-              default: that.default
-            },
-            success: function(res) {
-              wx.showToast({
-                title: res.data.info,
-                icon: 'none',
-                duration: 2000
-              })
-              if(res.data.code == 0){
-                setTimeout(()=>{
-                  wx.redirectTo({
-                    url: '/pages/dingDanAdd/main?theAllNum='+that.urlCanShu.theAllNum+"&finallyPrice="+that.urlCanShu.finallyPrice+"&goodsIds="+that.urlCanShu.goodsIds+"&numArr="+that.urlCanShu.numArr
-                  })
-                },2000)
+          that.$http.post({
+              url:"/wx/member/upAddress",
+              dataType:'json',
+              data:{
+                mad_id:that.mad_id,
+                type: this.isAddOrUpdate,
+                name: that.name,
+                mobile: that.mobile,
+                province: that.province,
+                city: that.city,
+                district: that.district,
+                address: that.address,
+                alias: that.dzActive+1,
+                default: that.default
               }
-            },
-            fail(err){
-              console.log(err)
+          })
+          .then(res =>{
+            wx.showToast({
+              title: res.info,
+              icon: 'none',
+              duration: 2000
+            })
+            if(res.code == 0){
+              setTimeout(()=>{
+                wx.redirectTo({
+                  url: '/pages/dingDanAdd/main?theAllNum='+that.urlCanShu.theAllNum+"&goodsIds="+that.urlCanShu.goodsIds+"&numArr="+that.urlCanShu.numArr
+                })
+              },2000)
             }
           })
         }else{

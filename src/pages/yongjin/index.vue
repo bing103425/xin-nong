@@ -29,23 +29,19 @@ export default {
   },
   mounted(){
     var that = this
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/distribution/getCommissionInfo',
-      method:'post',
-      dataType:'json',
-      data: {
-        token: that.$store.state.token
-      },
-      success: function(res) {
-        if(!res.data.data.length){
-          that.hasData = false
-        }
-        that.data = res.data.data
-        console.log(that.data)
-        that.data.forEach(element => {
-          element.creat_time = timestampToTime(element.creat_time,'min')
-        })
+    that.$http.post({
+      url:"/wx/distribution/getCommissionInfo",
+      dataType:'json'
+    })
+    .then(res =>{
+      if(!res.data.length){
+        that.hasData = false
       }
+      that.data = res.data
+      console.log(that.data)
+      that.data.forEach(element => {
+        element.creat_time = timestampToTime(element.creat_time,'min')
+      })
     })
   }
 }

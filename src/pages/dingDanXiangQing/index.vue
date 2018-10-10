@@ -71,16 +71,17 @@ export default {
     var pages = getCurrentPages() //获取加载的页面
     var currentPage = pages[pages.length-1] //获取当前页面的对象
     var order_id = currentPage.options.orderId
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/order/orderDetail',
-      method:'post',
-      dataType:'json',
-      data:{
-        token: that.$store.state.token,
-        order_id: order_id 
-      },
-      success: function(res) {
-        that.data = res.data.data
+
+    that.$http.post({
+        url:"/wx/order/orderDetail",
+        dataType:'json',
+        data:{
+          order_id: order_id 
+        }
+    })
+    .then(res =>{
+      if(res.code == 0){
+        that.data = res.data
         that.data.order_goods.forEach(element => {
           element.picture_info.pic_cover_small = 'http://xcx_cx_cx_shop.idc.gcsci.net/'+element.picture_info.pic_cover_small
         });

@@ -96,34 +96,32 @@ export default {
   methods:{
     toPayMoney(out_trade_no){
       var that = this
-      wx.request({
-        url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/pay/getPayValue',
-        method:'post',
-        dataType:'json',
-        data: {
-          token: that.$store.state.token,
-          out_trade_no: out_trade_no
-        },
-        success: function(res) {
-          if(res.data.code == 0){
-            wx.requestPayment({
-              timeStamp: res.data.data["timeStamp"],
-              nonceStr: res.data.data["nonceStr"],
-              package: res.data.data["package"],
-              signType: "MD5",
-              paySign: res.data.data["paySign"],
-              success: function(successret) {
-                //支付成功回调
-                wx.navigateTo({
-                  url: '/pages/quanBuDingDan/main'
-                })
-              },
-              fail: function(res) {}
-            })
+      that.$http.post({
+          url:"/wx/pay/getPayValue",
+          dataType:'json',
+          data:{
+            out_trade_no: out_trade_no
           }
-        },
-        fail(err){
-          console.log(err)
+      }).then(res =>{
+        if(res.code == 0){
+          wx.requestPayment({
+            timeStamp: res.data["timeStamp"],
+            nonceStr: res.data["nonceStr"],
+            package: res.data["package"],
+            signType: "MD5",
+            paySign: res.data["paySign"],
+            success: function(successret) {
+
+            //向父组件提交数据，使页面不会在刷新时回到个人中心
+            that.$emit('isGoBack',false)
+
+              //支付成功回调
+              wx.navigateTo({
+                url: '/pages/quanBuDingDan/main'
+              })
+            },
+            fail: function(res) {}
+          })
         }
       })
     },
@@ -134,27 +132,25 @@ export default {
     },
     confirmShouHuo(orderId){
       var that = this
-      wx.request({
-        url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/order/orderDelivery',
-        method:'post',
-        dataType:'json',
-        data: {
-          token: that.$store.state.token,
-          order_id: orderId
-        },
-        success: function(res) {
-          if(res.data.code == 0){
-            wx.showToast({
-              title: res.data.info,
-              icon: 'success',
-              duration: 2000
-            })
-            setTimeout(()=>{
-              wx.redirectTo({
-                url: '/pages/quanBuDingDan/main'
-              })
-            },2000)
+      that.$http.post({
+          url:"/wx/order/orderDelivery",
+          dataType:'json',
+          data:{
+            order_id: orderId
           }
+      }).then(res =>{
+        if(res.code == 0){
+          wx.showToast({
+            title: res.info,
+            icon: 'success',
+            duration: 2000
+          })
+          that.$emit('isGoBack',false)
+          setTimeout(()=>{
+            wx.redirectTo({
+              url: '/pages/quanBuDingDan/main'
+            })
+          },2000)
         }
       })
     },
@@ -175,29 +171,29 @@ export default {
         content: '删除后无法恢复，请谨慎操作',
         success: function(res) {
           if (res.confirm) {
-            wx.request({
-              url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/order/delOrderInfo',
-              method:'post',
-              dataType:'json',
-              data: {
-                token: that.$store.state.token,
-                order_id: orderId,
-              },
-              success: function(res) {
-                if(res.data.code == 0){
-                  wx.showToast({
-                    title: res.data.info,
-                    icon: 'success',
-                    duration: 2000
-                  })
-                  setTimeout(()=>{
-                    wx.reLaunch({
-                      url: '/pages/quanBuDingDan/main'
-                    })
-                  },2000)
+            that.$http.post({
+                url:"/wx/order/delOrderInfo",
+                dataType:'json',
+                data:{
+                  order_id: orderId
                 }
+            }).then(res =>{
+              if(res.code == 0){
+                wx.showToast({
+                  title: res.info,
+                  icon: 'success',
+                  duration: 2000
+                })
+
+                //找到删除的订单，在data列表里移除
+                that.fenxiangData.forEach((element,index) => {
+                  if(orderId == element.order_id){
+                    that.fenxiangData.splice(index,1)
+                  }
+                })
               }
             })
+
           }
         }
       })
@@ -223,7 +219,7 @@ export default {
       var postNumArr = numArr.toString()
       
       wx.navigateTo({
-        url: '/pages/queRenDingDan/main?theAllNum='+theAllNum+'&&finallyPrice='+finallyPrice.toFixed(2)+'&&goodsIds='+postGoodsArr+'&&numArr='+postNumArr
+        url: '/pages/queRenDingDan/main?theAllNum='+theAllNum+'&&goodsIds='+postGoodsArr+'&&numArr='+postNumArr
       })
     },
     open(orderId) {
@@ -232,31 +228,32 @@ export default {
         itemList: this.itemList,
         success: function (res) {
           console.log("index：" + res.tapIndex, "用户选的值为：" + that.itemList[res.tapIndex]);
-           //取消订单
-          wx.request({
-            url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/order/orderClose',
-            method:'post',
-            dataType:'json',
-            data: {
-              token: that.$store.state.token,
+          //取消订单
+          that.$http.post({
+              url:"/wx/order/orderClose",
+              dataType:'json',
+              data:{
               order_id: orderId,
               close_info: that.itemList[res.tapIndex]
-            },
-            success: function(res) {
-              if(res.data.code == 0){
-                wx.showToast({
-                  title: res.data.info,
-                  icon: 'success',
-                  duration: 2000
-                })
-                setTimeout(()=>{
-                  wx.redirectTo({
-                    url: '/pages/quanBuDingDan/main'
-                  })
-                },2000)
               }
+          })
+          .then(res =>{
+            if(res.code == 0){
+              wx.showToast({
+                title: res.data.info,
+                icon: 'success',
+                duration: 2000
+              })
+              
+              that.$emit('isGoBack',false)
+              setTimeout(()=>{
+                wx.redirectTo({
+                  url: '/pages/quanBuDingDan/main'
+                })
+              },2000)
             }
           })
+          
         }
       })
     }

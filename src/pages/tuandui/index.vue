@@ -45,20 +45,18 @@ export default {
     },
     getXiaJiList(uid){
       var that = this
-      wx.request({
-        url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/distribution/getUserTeam',
-        method:'post',
+      that.$http.post({
+        url:"/wx/distribution/getUserTeam",
         dataType:'json',
         data: {
-          token: that.$store.state.token,
           uid: uid
-        },
-        success: function(res) {
-          if(!res.data.data.user_info.length){
-            that.hasData = false
-          }
-          that.userList = res.data.data.user_info
         }
+      })
+      .then(res =>{
+        if(!res.data.user_info.length){
+          that.hasData = false
+        }
+        that.userList = res.data.user_info
       })
     },
     toXiaJi(isHasXiaJi,uid){

@@ -46,91 +46,86 @@ export default {
     var that = this
     that.fenxiangData = []
     //这个请求没用
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=wx/task/load_task',
-      method:'post',
-      dataType:'json',
-      success: function(res) {
+    that.$http.post({
+      url:"/wx/task/load_task",
+      dataType: "json",
+      data:{}
+    })
+    .then(res =>{
         
-        //这个才有用，获取订单列表
-        wx.request({
-          url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/order/myOrderList',
-          method:'post',
-          dataType:'json',
-          data:{
-            token: that.$store.state.token
-          },
-          success: function(res) {
-            if(res.data.code == 0){
-              res.data.data.forEach(item => {
-                //格式化时间格式
-                item.create_time = timestampToTime(item.create_time*1000,'sec')
+      //这个才有用，获取订单列表
+      that.$http.post({
+        url:"/wx/order/myOrderList",
+        dataType: "json",
+        data:{}
+      })
+      .then(res =>{
 
-                //格式化状态的名称
-                if(item.status_name == '已收货'){
-                  item.status_name = '待评论'
-                }else if(item.status_name == '已发货'){
-                  item.status_name = '待收货'
-                }
+        if(res.code == 0){
+          res.data.forEach(item => {
+            //格式化时间格式
+            item.create_time = timestampToTime(item.create_time*1000,'sec')
 
-                //把图片加上域名
-                item.order_goods.forEach(innerItem => {
-                  innerItem.pic.pic_cover_small ='http://xcx_cx_cx_shop.idc.gcsci.net/'+ innerItem.pic.pic_cover_small
-                })
-              })
-              let beforeData = res.data.data
-              //请求到的是所有的订单列表，格式化一下，将退货的商品放在数组里
-              for(let i=0;i<beforeData.length;i++){
-                if(beforeData[i].order_status==-1 || beforeData.order_status==-2){
-                  for(let j=0;j<beforeData[i].order_goods.length;j++){
-                      // console.log('次数',j)
-                    if(beforeData[i].order_goods[j].refund_status!==0){
-                      let obj = {}
-                      obj=that.copy(beforeData[i],obj)
-                      obj.order_goods=beforeData[i].order_goods[j]
+            //格式化状态的名称
+            if(item.status_name == '已收货'){
+              item.status_name = '待评论'
+            }else if(item.status_name == '已发货'){
+              item.status_name = '待收货'
+            }
 
-                      switch(beforeData[i].order_goods[j].refund_status)
-                      {
-                      case 1:
-                        obj.status_name = '买家申请退款'
-                        break
-                      case 2:
-                        obj.status_name = '等待买家退货'
-                        break
-                      case 3:
-                        obj.status_name = '等待卖家确认收货'
-                        break
-                      case 4:
-                        obj.status_name = '等待卖家确认退款'
-                        break
-                      case 5:
-                        obj.status_name = '退款已成功'
-                        break
-                      case -1:
-                        obj.status_name = '退款已拒绝'
-                        break
-                      case -2:
-                        obj.status_name = '退款已关闭'
-                        break
-                      case -3:
-                        obj.status_name = '退款申请不通过'
-                        break
-                      }
-                      that.fenxiangData.push(obj)
-                    }
+            //把图片加上域名
+            item.order_goods.forEach(innerItem => {
+              innerItem.pic.pic_cover_small ='http://xcx_cx_cx_shop.idc.gcsci.net/'+ innerItem.pic.pic_cover_small
+            })
+          })
+          let beforeData = res.data
+          //请求到的是所有的订单列表，格式化一下，将退货的商品放在数组里
+          for(let i=0;i<beforeData.length;i++){
+            if(beforeData[i].order_status==-1 || beforeData.order_status==-2){
+              for(let j=0;j<beforeData[i].order_goods.length;j++){
+                  // console.log('次数',j)
+                if(beforeData[i].order_goods[j].refund_status!==0){
+                  let obj = {}
+                  obj=that.copy(beforeData[i],obj)
+                  obj.order_goods=beforeData[i].order_goods[j]
+
+                  switch(beforeData[i].order_goods[j].refund_status)
+                  {
+                  case 1:
+                    obj.status_name = '买家申请退款'
+                    break
+                  case 2:
+                    obj.status_name = '等待买家退货'
+                    break
+                  case 3:
+                    obj.status_name = '等待卖家确认收货'
+                    break
+                  case 4:
+                    obj.status_name = '等待卖家确认退款'
+                    break
+                  case 5:
+                    obj.status_name = '退款已成功'
+                    break
+                  case -1:
+                    obj.status_name = '退款已拒绝'
+                    break
+                  case -2:
+                    obj.status_name = '退款已关闭'
+                    break
+                  case -3:
+                    obj.status_name = '退款申请不通过'
+                    break
                   }
+                  that.fenxiangData.push(obj)
                 }
-              }
-              console.log('that.fenxiangData',that.fenxiangData)
-              if(that.fenxiangData.length == 0){
-                that.hasData = false
               }
             }
           }
-        })
-
-
-      }
+          if(that.fenxiangData.length == 0){
+            that.hasData = false
+          }
+        }
+      })
     })
   },
 

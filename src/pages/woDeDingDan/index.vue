@@ -22,19 +22,11 @@ export default {
 
   mounted () {
     var that = this
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/order/myOrderList',
-      method:'post',
-      dataType:'json',
-      data: {
-        token: that.$store.state.token
-      },
-      success: function(res) {
-        console.log('res',res.data)
-      },
-      fail(err){
-        console.log(err)
-      }
+    that.$http.post({
+      url:"/wx/order/myOrderList",
+      dataType:'json'
+    })
+    .then(res =>{
     })
   }
 }

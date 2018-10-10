@@ -112,38 +112,36 @@ export default {
           duration: 2000
         })
       }else{
-        wx.request({
-          url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/order/orderRefundAskfor',
-          method:'post',
+        that.$http.post({
+          url:"/wx/order/orderRefundAskfor",
           dataType:'json',
           data: {
-            token: that.$store.state.token,
             order_goods_id: that.orderGoodsId,
             refund_type: 1,
             refund_reason: that.refund_reason,
             refund_description: that.thData[3].value,
             refund_user_mobile: that.thData[4].value,
             refund_img: that.filesOnline.toString()
-          },
-          success: function(res) {
-            if(res.data.code == 0){
-              wx.showToast({
-                title: '申请退货成功',
-                icon: 'success',
-                duration: 2000
+          }
+        })
+        .then(res =>{
+          if(res.code == 0){
+            wx.showToast({
+              title: '申请退货成功',
+              icon: 'success',
+              duration: 2000
+            })
+            setTimeout(() => {
+              wx.redirectTo({
+                url: '/pages/quanBuDingDan/main'
               })
-              setTimeout(() => {
-                wx.redirectTo({
-                  url: '/pages/quanBuDingDan/main'
-                })
-              }, 2000)
-            }else{
-              wx.showToast({
-                title: res.data.info,
-                icon: 'none',
-                duration: 2000
-              })
-            }
+            }, 2000)
+          }else{
+            wx.showToast({
+              title: res.info,
+              icon: 'none',
+              duration: 2000
+            })
           }
         })
       }
@@ -213,21 +211,19 @@ export default {
     var currentPage = pages[pages.length - 1]; //获取当前页面的对象
     this.orderGoodsId = currentPage.options.order_goods_id
     
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/order/goRefundAskfor',
-      method:'post',
+    that.$http.post({
+      url:"/wx/order/goRefundAskfor",
       dataType:'json',
       data: {
-        token: that.$store.state.token,
         order_goods_id: that.orderGoodsId
-      },
-      success: function(res) {
-        that.isGetGoodsList = res.data.data.refund_type
-        that.reasonList = res.data.data.refund_reason
-        that.thData[2].value = Number(res.data.data.return_money).toFixed(2)
-        that.mobile = res.data.data.mobile
-        that.thData[4].value = that.mobile
       }
+    })
+    .then(res =>{
+      that.isGetGoodsList = res.data.refund_type
+      that.reasonList = res.data.refund_reason
+      that.thData[2].value = Number(res.data.return_money).toFixed(2)
+      that.mobile = res.data.mobile
+      that.thData[4].value = that.mobile
     })
   }
 }

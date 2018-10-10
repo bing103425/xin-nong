@@ -83,22 +83,19 @@ export default {
   
   mounted(){
     var that = this
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/distribution/disOrderList',
-      method:'post',
-      dataType:'json',
-      data: {
-        token: that.$store.state.token
-      },
-      success: function(res) {
-        if(!res.data.data.length){
-          that.hasData = false
-        }
-        that.fenxiangData = res.data.data
-        that.fenxiangData.forEach(element => {
-          element.creat_time = timestampToTime(element.creat_time*1000,'day')
-        });
+    that.$http.post({
+        url:"/wx/distribution/disOrderList",
+        dataType:'json',
+        data:{}
+    })
+    .then(res =>{
+      if(!res.data.length){
+        that.hasData = false
       }
+      that.fenxiangData = res.data
+      that.fenxiangData.forEach(element => {
+        element.creat_time = timestampToTime(element.creat_time*1000,'day')
+      })
     })
   }
 }

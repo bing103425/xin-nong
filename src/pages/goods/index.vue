@@ -87,23 +87,20 @@ export default {
     that.activeIndex = 0
     that.pingLunData = []
     var regExp = /\/upload.*?\jpg/g
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getGoodsDetail',
-      method:'post',
-      dataType:'json',
-      data:{
-        gid: that.goodsId.id
-      },
-      success: function(res) {
-        console.log(res.data.data.description)
-        if(regExp.exec( res.data.data.description)){
-          console.log('0000')
-          res.data.data.description = res.data.data.description.replace(regExp ,'http://xcx_cx_cx_shop.idc.gcsci.net'+regExp.exec( res.data.data.description)[0])
+
+    that.$http.post({
+        url:"/wx/index/getGoodsDetail",
+        dataType:'json',
+        data:{
+          gid: that.goodsId.id
         }
-        that.goodsInfo = res.data.data
-        console.log('父级页面的',that.goodsInfo)
-        that.length = res.data.data.album_pictures.length
+    })
+    .then(res =>{
+      if(regExp.exec( res.data.description)){
+        res.data.description = res.data.description.replace(regExp ,'http://xcx_cx_cx_shop.idc.gcsci.net'+regExp.exec( res.data.description)[0])
       }
+      that.goodsInfo = res.data
+      that.length = res.data.album_pictures.length
     })
 
 
@@ -126,24 +123,43 @@ export default {
       console.log(that.page)
       wx.showLoading({
         title: '玩命加载中'
-      })    // 页数+1
-      wx.request({
-        url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getGoodsEvaluate',
-        method:'post',
-        dataType:'json',
-        data:{
-          token: that.$store.state.token,
-          p: that.page
-        },
-        success: function(res) {
-          wx.hideLoading()
-          that.pingLunData = that.pingLunData.concat(res.data.data.list)
-          if(res.data.data.list_page == that.page){
-            that.isNextPage = false
-          }
-          that.page++
-        }
       })
+      // 页数+1
+      that.$http.post({
+          url:"/wx/index/getGoodsEvaluate",
+          dataType:'json',
+          data:{
+            p: that.page
+          }
+      })
+      .then(res =>{
+        wx.hideLoading()
+        that.pingLunData = that.pingLunData.concat(res.data.list)
+        if(res.data.list_page == that.page){
+          that.isNextPage = false
+        }
+        that.page++
+      })
+    }
+  },
+  //分享给好友
+  onShareAppMessage: function () {
+    const pages = getCurrentPages()
+    const currentPage = pages[pages.length - 1]
+    const url = currentPage.route
+    const options = currentPage.options
+    let urlWithArgs = `/${url}?`
+    for (let key in options) {
+      const value = options[key]
+      urlWithArgs += `${key}=${value}&`
+    }
+    //页面路由及参数
+    urlWithArgs = urlWithArgs.substring(0, urlWithArgs.length - 1)
+    
+    return {
+      title: '分享页面',
+      desc: '描述描述',
+      path: urlWithArgs
     }
   },
 
@@ -165,20 +181,19 @@ export default {
       this.activeIndex = e.currentTarget.id
       var that = this
       if(e.currentTarget.id == 1&&that.pingLunData == ''){
-        wx.request({
-          url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getGoodsEvaluate',
-          method:'post',
-          dataType:'json',
-          data:{
-            gid: that.goodsId.id
-          },
-          success: function(res) {
-            that.pingLunData = res.data.data.list
-            if(res.data.data.list_page == that.page){
-              that.isNextPage = false
+        that.$http.post({
+            url:"/wx/index/getGoodsEvaluate",
+            dataType:'json',
+            data:{
+              gid: that.goodsId.id
             }
-            that.page++
+        })
+        .then(res =>{
+          that.pingLunData = res.data.list
+          if(res.data.list_page == that.page){
+            that.isNextPage = false
           }
+          that.page++
         })
       }
     }

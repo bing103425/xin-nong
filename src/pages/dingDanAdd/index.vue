@@ -27,12 +27,12 @@ export default {
   methods: {
     toDingDanPutInAdd(){
       wx.navigateTo({
-        url: '/pages/dingDanPutInAdd/main?theAllNum='+this.urlCanShu.theAllNum+"&finallyPrice="+this.urlCanShu.finallyPrice+"&goodsIds="+this.urlCanShu.goodsIds+"&numArr="+this.urlCanShu.numArr
+        url: '/pages/dingDanPutInAdd/main?theAllNum='+this.urlCanShu.theAllNum+"&goodsIds="+this.urlCanShu.goodsIds+"&numArr="+this.urlCanShu.numArr
       })
     },
     goBackToOrder(id){
       wx.navigateTo({
-        url: '/pages/queRenDingDan/main?addId='+id+"&theAllNum="+this.urlCanShu.theAllNum+"&finallyPrice="+this.urlCanShu.finallyPrice+"&goodsIds="+this.urlCanShu.goodsIds+"&numArr="+this.urlCanShu.numArr
+        url: '/pages/queRenDingDan/main?addId='+id+"&theAllNum="+this.urlCanShu.theAllNum+"&goodsIds="+this.urlCanShu.goodsIds+"&numArr="+this.urlCanShu.numArr
       })
     },
     idToAddStr(province,city,district){
@@ -71,31 +71,22 @@ export default {
     var currentPage = pages[pages.length-1] //获取当前页面的对象
     this.urlCanShu = currentPage.options
     
-    console.log('参数',this.urlCanShu)
-
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/member/memberAddress',
-      method:'post',
-      dataType:'json',
-      data: {
-        token: that.$store.state.token
-      },
-      success: function(res) {
-        that.addList = res.data.data
-        
-        //开始循环，根据地址转换后的数据查询到对应id
-        that.addList.forEach(item => {
-          let addStr = that.idToAddStr(item.province,item.city,item.district)
-          //时间戳转换正常日期
-          item.province = addStr[0]
-          item.city = addStr[1]
-          item.district = addStr[2]
-        })
-        
-      },
-      fail(err){
-        console.log(err)
-      }
+    that.$http.post({
+        url:"/wx/member/memberAddress",
+        dataType:'json',
+        data:{}
+    })
+    .then(res =>{
+      that.addList = res.data
+      
+      //开始循环，根据地址转换后的数据查询到对应id
+      that.addList.forEach(item => {
+        let addStr = that.idToAddStr(item.province,item.city,item.district)
+        //时间戳转换正常日期
+        item.province = addStr[0]
+        item.city = addStr[1]
+        item.district = addStr[2]
+      })
     })
   }
 }

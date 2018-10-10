@@ -59,30 +59,27 @@ export default {
       var that = this
       that.isHasContent = false
       if(that.isNextPage){
-        wx.request({
-          url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getGoodsList',
-          method:'post',
-          dataType:'json',
-          data:{
-            token: that.$store.state.token,
-            p: that.page
-          },
-          success: function(res) {
-            that.tabWidth = (res.data.data.category_list.length + 1) * 200
-            if(res.data.data.goods_list_page == that.page){
+        that.$http.post({
+            url:"/wx/index/getGoodsList",
+            data:{
+              p: that.page
+            }
+        })
+        .then(res =>{
+            that.tabWidth = (res.data.category_list.length + 1) * 200
+            if(res.data.goods_list_page == that.page){
               that.isNextPage = false
             }
-            if(!res.data.data.goods_list.length){
+            if(!res.data.goods_list.length){
               that.isHasContent = true
             }
             
             var obj = {cid:'',cname:'全部商品'}
-            var tabList = res.data.data.category_list
+            var tabList = res.data.category_list
             tabList.unshift(obj)
             that.tabData = tabList
-            that.goodsList = res.data.data.goods_list
+            that.goodsList = res.data.goods_list
             that.page++
-          }
         })
       }
     },
@@ -98,26 +95,22 @@ export default {
       if(cid == ''){
         this.initGoodsList()
       }else{
-        wx.request({
-          url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getGoodsList',
-          method:'post',
-          dataType:'json',
-          data:{
-            token: that.$store.state.token,
-            p: that.page,
-            cid: cid
-          },
-          success: function(res) {
-            console.log(res.data)
-            if(res.data.data.goods_list_page == that.page){
+        that.$http.post({
+            url:"/wx/index/getGoodsList",
+            data:{
+              p: that.page,
+              cid: cid
+            }
+        })
+        .then(res =>{
+            if(res.data.goods_list_page == that.page){
               that.isNextPage = false
             }
-            if(!res.data.data.goods_list.length){
+            if(!res.data.goods_list.length){
               that.isHasContent = true
             }
-            that.goodsList = that.goodsList.concat(res.data.data.goods_list)
+            that.goodsList = that.goodsList.concat(res.data.goods_list)
             that.page++
-          }
         })
       }
     }
@@ -129,23 +122,21 @@ export default {
       // 显示加载图标
       wx.showLoading({
         title: '玩命加载中'
-      })    // 页数+1
-      wx.request({
-        url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/index/getGoodsList',
-        method:'post',
-        dataType:'json',
-        data:{
-          token: that.$store.state.token,
-          p: that.page
-        },
-        success: function(res) {
+      })
+      // 页数+1
+      that.$http.post({
+          url:"/wx/index/getGoodsList",
+          data:{
+            p: that.page
+          }
+      })
+      .then(res =>{
           wx.hideLoading()
-          that.goodsList = that.goodsList.concat(res.data.data.goods_list)
-          if(res.data.data.goods_list_page == that.page){
+          that.goodsList = that.goodsList.concat(res.data.goods_list)
+          if(res.data.goods_list_page == that.page){
             that.isNextPage = false
           }
           that.page++
-        }
       })
     }
   },
@@ -156,10 +147,22 @@ export default {
   },
   //分享给好友
   onShareAppMessage: function () {
+    const pages = getCurrentPages()
+    const currentPage = pages[pages.length - 1]
+    const url = currentPage.route
+    const options = currentPage.options
+    let urlWithArgs = `/${url}?`
+    for (let key in options) {
+      const value = options[key]
+      urlWithArgs += `${key}=${value}&`
+    }
+    //页面路由及参数
+    urlWithArgs = urlWithArgs.substring(0, urlWithArgs.length - 1)
+    
     return {
-      title: '啦啦啦啦',
+      title: '分享页面',
       desc: '描述描述',
-      path: '/page/user?id=123'
+      path: urlWithArgs
     }
   }
 

@@ -6,7 +6,7 @@
         <img :src="userInfo.avatarUrl" class="fx-mine-headimg" alt="">
         <div>
           <p class="fx-name">{{userInfo.nickName}}</p>
-          <p class="fx-tjr">推荐人：{{data.pid_name}}</p>
+          <p class="fx-tjr" v-if="data.pid_name">推荐人：{{data.pid_name}}</p>
         </div>
       </div>
     </div>
@@ -98,18 +98,17 @@ export default {
 
   mounted(){
     var that = this
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/distribution/index',
-      method:'post',
-      dataType:'json',
-      data: {
-        token: that.$store.state.token
-      },
-      success: function(res) {
-        that.data = res.data.data
-        that.fxIconList[1].info = res.data.data.dis_order_count+'笔'
-        that.fxIconList[0].info = res.data.data.team_count+'人'
-      }
+    that.$http.post({
+        url:"/wx/distribution/index",
+        dataType:'json',
+        data:{}
+    })
+    .then(res =>{
+      that.data = res.data
+      that.fxIconList[1].info = res.data.dis_order_count+'笔'
+      that.fxIconList[0].info = res.data.team_count+'人'
+      that.fxIconList[2].info = res.data.dis_count+'笔'
+      that.fxIconList[3].info = res.data.wis_count+'笔'
     })
   }
 }

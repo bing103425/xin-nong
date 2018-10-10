@@ -131,24 +131,20 @@ export default {
 
   mounted(){
     var that = this
-    wx.request({
-      url: 'http://xcx_shop.idc.gcsci.net/index.php?s=/wx/distribution/memberWithDrawList',
-      method:'post',
-      dataType:'json',
-      data: {
-        token: that.$store.state.token
-      },
-      success: function(res) {
-        if(res.data.code == 0){
-          if(!res.data.data.length){
+    that.$http.post({
+      url:"/wx/distribution/memberWithDrawList",
+      dataType:'json'
+    })
+    .then(res =>{
+        if(res.code == 0){
+          if(!res.data.length){
             that.hasData = false
           }
-          that.wholeData = res.data.data
+          that.wholeData = res.data
           that.wholeData.forEach(element => {
             element.ask_for_date = timestampToTime((element.ask_for_date)*1000,'day')
           })
         }
-      }
     })
   }
 }
